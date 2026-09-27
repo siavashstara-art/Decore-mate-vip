@@ -333,23 +333,47 @@ function getAllProjectFiles(
   return fileList;
 }
 
-// GET /api/android/project-info — Inspect Android project & workflow files
+// GET /api/android/project-info — Inspect Android project, Gradle 8.5 & Release Signing workflow files
 app.get('/api/android/project-info', (_req, res) => {
   try {
     const rootDir = process.cwd();
     const workflowPath = path.join(rootDir, 'android/android-release-workflow.yml');
+    const rootGradlePath = path.join(rootDir, 'android/build.gradle');
     const appGradlePath = path.join(rootDir, 'android/app/build.gradle');
+    const settingsGradlePath = path.join(rootDir, 'android/settings.gradle');
+    const wrapperPropsPath = path.join(
+      rootDir,
+      'android/gradle/wrapper/gradle-wrapper.properties'
+    );
+    const proguardPath = path.join(rootDir, 'android/app/proguard-rules.pro');
     const manifestPath = path.join(rootDir, 'android/app/src/main/AndroidManifest.xml');
 
     res.json({
       packageName: 'com.decormate.vip',
       gradleVersion: '8.5',
+      signingConfig: {
+        keystoreFile: 'keystore.jks',
+        keyAlias: 'decormate_key',
+        v1SigningEnabled: true,
+        v2SigningEnabled: true,
+        validityYears: 27,
+      },
       artifacts: [
         'DecorMate-VIP-v1.0.0-Release.apk',
         'DecorMate-VIP-v1.0.0-Release.aab',
       ],
       workflowYaml: fs.existsSync(workflowPath) ? fs.readFileSync(workflowPath, 'utf-8') : '',
+      rootBuildGradle: fs.existsSync(rootGradlePath)
+        ? fs.readFileSync(rootGradlePath, 'utf-8')
+        : '',
       appBuildGradle: fs.existsSync(appGradlePath) ? fs.readFileSync(appGradlePath, 'utf-8') : '',
+      settingsGradle: fs.existsSync(settingsGradlePath)
+        ? fs.readFileSync(settingsGradlePath, 'utf-8')
+        : '',
+      gradleWrapperProperties: fs.existsSync(wrapperPropsPath)
+        ? fs.readFileSync(wrapperPropsPath, 'utf-8')
+        : '',
+      proguardRules: fs.existsSync(proguardPath) ? fs.readFileSync(proguardPath, 'utf-8') : '',
       androidManifest: fs.existsSync(manifestPath) ? fs.readFileSync(manifestPath, 'utf-8') : '',
     });
   } catch (err: any) {

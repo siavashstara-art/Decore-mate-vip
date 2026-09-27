@@ -618,6 +618,89 @@ export default function App() {
       </header>
 
       <main id="top" className="flex-1">
+        {/* Dedicated 1-Click Accessibility (Disability/Low-Vision/Motor), ADHD Focus & Automated Gradle APK/AAB Bar */}
+        <section
+          aria-label="نوار دسترسی سریع ویژه معلولان، کم‌بینایان، تمرکز ADHD و خروجی خودکار اندروید"
+          className="px-4 sm:px-8 pt-4 max-w-[1440px] mx-auto"
+        >
+          <div className="hc-card bg-white border-2 border-[#D4AF37] rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-extrabold text-[#4A2E1B]">
+              <Accessibility className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>دسترسی سریع ویژه معلولان، تمرکز ADHD و اتوماسیون امن:</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAdhdFocusMode(!adhdFocusMode)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  adhdFocusMode
+                    ? 'bg-emerald-600 text-white border-emerald-700'
+                    : 'bg-[#FAF7F2] text-[#4A2E1B] border-[#E6DEC8] hover:border-[#4A2E1B]'
+                }`}
+              >
+                <Brain className="w-4 h-4 shrink-0" />
+                <span>{adhdFocusMode ? '✓ حالت تمرکز ADHD فعال' : '🧠 حالت تمرکز ویژه ADHD'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => (isSpeaking ? stopSpeaking() : handleReadInvoiceAloud())}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  isSpeaking
+                    ? 'bg-amber-500 text-black border-amber-600'
+                    : 'bg-[#FAF7F2] text-[#4A2E1B] border-[#E6DEC8] hover:border-[#4A2E1B]'
+                }`}
+              >
+                {isSpeaking ? <VolumeX className="w-4 h-4 shrink-0" /> : <Volume2 className="w-4 h-4 shrink-0" />}
+                <span>{isSpeaking ? 'توقف خوانش صوتی' : '🔊 خوانش صوتی پیش‌فاکتور (کم‌بینایان)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const nextScale =
+                    fontScale === 'normal' ? 'large' : fontScale === 'large' ? 'xlarge' : 'normal';
+                  setFontScale(nextScale);
+                  setLargeTouchTargets(nextScale !== 'normal');
+                }}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  fontScale !== 'normal'
+                    ? 'bg-[#4A2E1B] text-[#F6E27A] border-[#4A2E1B]'
+                    : 'bg-[#FAF7F2] text-[#4A2E1B] border-[#E6DEC8] hover:border-[#4A2E1B]'
+                }`}
+              >
+                <TypeIcon className="w-4 h-4 shrink-0" />
+                <span>
+                  🔍 فونت و دکمه لمسی درشت ({fontScale === 'normal' ? 'عادی' : fontScale === 'large' ? 'درشت ۱۱۵٪' : 'فوق‌درشت ۱۳۰٪'})
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHighContrast(!highContrast)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${
+                  highContrast
+                    ? 'bg-black text-yellow-300 border-yellow-400'
+                    : 'bg-[#FAF7F2] text-[#4A2E1B] border-[#E6DEC8] hover:border-[#4A2E1B]'
+                }`}
+              >
+                <Contrast className="w-4 h-4 shrink-0" />
+                <span>{highContrast ? '✓ کنتراست بالا فعال' : '🌓 کنتراست بالا'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGithubModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#4A2E1B] text-[#F6E27A] border border-[#D4AF37] flex items-center gap-1.5 cursor-pointer"
+              >
+                <Rocket className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <span>📦 فایل‌های Gradle 8.5 + امضای ریلیز APK/AAB گیت‌هاب</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* 3-Second Hook-Driven Hero Banner (Hidden or Simplified in ADHD Calm Mode) */}
         {!adhdFocusMode && (
           <section

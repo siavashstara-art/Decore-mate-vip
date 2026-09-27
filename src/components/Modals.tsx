@@ -30,7 +30,8 @@ export const GithubPushModal: React.FC<GithubPushModalProps> = ({ isOpen, onClos
   const [error, setError] = useState<string | null>(null);
   const [projectInfo, setProjectInfo] = useState<any>(null);
   const [vaultStatus, setVaultStatus] = useState<any>(null);
-  const [showWorkflowCode, setShowWorkflowCode] = useState(false);
+  const [showWorkflowCode, setShowWorkflowCode] = useState(true);
+  const [activeCodeTab, setActiveCodeTab] = useState<'gradle' | 'workflow' | 'manifest'>('gradle');
 
   useEffect(() => {
     if (isOpen) {
@@ -97,6 +98,16 @@ export const GithubPushModal: React.FC<GithubPushModalProps> = ({ isOpen, onClos
     const a = document.createElement('a');
     a.href = url;
     a.download = 'android-release.yml';
+    a.click();
+  };
+
+  const handleDownloadGradleFile = () => {
+    if (!projectInfo?.appBuildGradle) return;
+    const blob = new Blob([projectInfo.appBuildGradle], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'build.gradle';
     a.click();
   };
 
@@ -266,23 +277,72 @@ export const GithubPushModal: React.FC<GithubPushModalProps> = ({ isOpen, onClos
 
         {showWorkflowCode && projectInfo && (
           <div className="mt-5 space-y-3 border-t border-[#E6DEC8] pt-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#4A2E1B]">
-                محتوای فایل /android/android-release-workflow.yml:
-              </span>
-              <button
-                onClick={handleDownloadWorkflowFile}
-                className="px-3 py-1.5 rounded-lg bg-[#4A2E1B] text-[#F6E27A] text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>دانلود فایل YML</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 bg-white p-1 rounded-xl border border-[#E6DEC8]">
+                <button
+                  type="button"
+                  onClick={() => setActiveCodeTab('gradle')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                    activeCodeTab === 'gradle'
+                      ? 'bg-[#4A2E1B] text-[#F6E27A]'
+                      : 'text-[#6F4E37] hover:text-[#4A2E1B]'
+                  }`}
+                >
+                  ۱. فایل Gradle و امضای ریلیز (app/build.gradle)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveCodeTab('workflow')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                    activeCodeTab === 'workflow'
+                      ? 'bg-[#4A2E1B] text-[#F6E27A]'
+                      : 'text-[#6F4E37] hover:text-[#4A2E1B]'
+                  }`}
+                >
+                  ۲. ورکفلو گیت‌هاب (APK + AAB + Keystore)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveCodeTab('manifest')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                    activeCodeTab === 'manifest'
+                      ? 'bg-[#4A2E1B] text-[#F6E27A]'
+                      : 'text-[#6F4E37] hover:text-[#4A2E1B]'
+                  }`}
+                >
+                  ۳. AndroidManifest.xml
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadGradleFile}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#4A2E1B] text-[#4A2E1B] text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>دانلود build.gradle</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadWorkflowFile}
+                  className="px-3 py-1.5 rounded-lg bg-[#4A2E1B] text-[#F6E27A] text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>دانلود ورکفلو YML</span>
+                </button>
+              </div>
             </div>
+
             <pre
               dir="ltr"
               className="p-4 rounded-xl bg-[#1E1109] text-[#F6E27A] text-[11px] font-mono-tabular overflow-x-auto max-h-60"
             >
-              {projectInfo.workflowYaml}
+              {activeCodeTab === 'gradle'
+                ? projectInfo.appBuildGradle
+                : activeCodeTab === 'workflow'
+                ? projectInfo.workflowYaml
+                : projectInfo.androidManifest}
             </pre>
           </div>
         )}
