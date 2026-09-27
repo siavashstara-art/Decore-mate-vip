@@ -1,0 +1,82 @@
+name: Build & Release DecorMate VIP Android (APK & AAB)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle 8.5
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: Generate Release Keystore (keystore.jks)
+        working-directory: ./android/app
+        run: |
+          if [ ! -f keystore.jks ]; then
+            keytool -genkeypair -v \
+              -keystore keystore.jks \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -alias decormate_key \
+              -storepass decormate123 \
+              -keypass decormate123 \
+              -dname "CN=DecorMate VIP, OU=FBNM Ecosystem, O=NeoMetaverCity, L=Tehran, S=Tehran, C=IR"
+          fi
+
+      - name: Build Signed Release APK & AAB (Google Play, CafeBazaar, Myket)
+        working-directory: ./android
+        env:
+          KEYSTORE_PASSWORD: decormate123
+          KEY_ALIAS: decormate_key
+          KEY_PASSWORD: decormate123
+        run: |
+          gradle assembleRelease bundleRelease --no-daemon
+
+      - name: Prepare Release Artifacts
+        run: |
+          mkdir -p release-outputs
+          cp android/app/build/outputs/apk/release/app-release.apk release-outputs/DecorMate-VIP-v1.0.0-Release.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab release-outputs/DecorMate-VIP-v1.0.0-Release.aab
+
+      - name: Upload Artifacts to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: DecorMate-VIP-Android-Packages
+          path: |
+            release-outputs/DecorMate-VIP-v1.0.0-Release.apk
+            release-outputs/DecorMate-VIP-v1.0.0-Release.aab
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "DecorMate VIP v1.0.${{ github.run_number }} — نسخه رسمی اندروید (APK + AAB)"
+          body: |
+            ### 👑 DecorMate VIP | دکورمِیت — نسخه رسمی اندروید
+            **اکوسیستم آفرینش | شهر جدید نیومتاورسیتی جهان | توان استیج FBNM**
+            
+            - 📦 **فایل `DecorMate-VIP-v1.0.0-Release.apk`**: قابل نصب مستقیم روی تمامی گوشی‌های اندروید و آماده بارگذاری در **کافه‌بازار** و **مایکت**.
+            - 📦 **فایل `DecorMate-VIP-v1.0.0-Release.aab`**: باندل رسمی امضاشده آماده انتشار در **گوگل‌پلی (Google Play Console)**.
+          files: |
+            release-outputs/DecorMate-VIP-v1.0.0-Release.apk
+            release-outputs/DecorMate-VIP-v1.0.0-Release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
