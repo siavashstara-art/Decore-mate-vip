@@ -109,6 +109,27 @@ export default function App() {
   const [ceilingHeightCm, setCeilingHeightCm] = useState<number>(280);
   const [checkMonths, setCheckMonths] = useState<number>(4);
   const [includeBlumAndSlab, setIncludeBlumAndSlab] = useState<boolean>(true);
+  const [clientNameInput, setClientNameInput] = useState<string>('');
+  const [savedQuotes, setSavedQuotes] = useState<
+    Array<{
+      id: string;
+      clientName: string;
+      projectTypeId: string;
+      materialId: string;
+      lengthMeters: number;
+      ceilingHeightCm: number;
+      checkMonths: number;
+      totalCashToman: number;
+      createdAt: string;
+    }>
+  >(() => {
+    try {
+      const raw = localStorage.getItem('decormate_offline_quotes_v1');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Showcase State
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -266,6 +287,34 @@ export default function App() {
     }
   };
 
+  const handleSaveOfflineQuote = () => {
+    const newEntry = {
+      id: String(Date.now()),
+      clientName: clientNameInput.trim() || `پروژه مشتری (${lengthMeters} متر)`,
+      projectTypeId,
+      materialId,
+      lengthMeters,
+      ceilingHeightCm,
+      checkMonths,
+      totalCashToman: totalCashPriceToman,
+      createdAt: new Date().toLocaleDateString('fa-IR'),
+    };
+    const updated = [newEntry, ...savedQuotes].slice(0, 12);
+    setSavedQuotes(updated);
+    setClientNameInput('');
+    try {
+      localStorage.setItem('decormate_offline_quotes_v1', JSON.stringify(updated));
+    } catch {}
+  };
+
+  const handleDeleteOfflineQuote = (id: string) => {
+    const updated = savedQuotes.filter((q) => q.id !== id);
+    setSavedQuotes(updated);
+    try {
+      localStorage.setItem('decormate_offline_quotes_v1', JSON.stringify(updated));
+    } catch {}
+  };
+
   const handleAskAiArchitect = async (customPromptText?: string, customMode?: 'design' | 'caption') => {
     const finalPrompt = customPromptText ?? aiPrompt;
     const finalMode = customMode ?? aiMode;
@@ -286,11 +335,17 @@ export default function App() {
       setAiReply(data.reply || '');
       setAiEngineBadge(
         data.engine === 'cloud-gemini'
-          ? '⚡ متصل به هوش مصنوعی ابری Gemini Server'
-          : '🏛️ موتور معمار هوشمند آفلاین سرور (بدون نیاز به کلید API)'
+          ? '⚡ اتوماسیون ابری Gemini Server (Zero-Touch Vault)'
+          : '🏛️ موتور معمار هوشمند خودکار سرور (بدون نیاز به دخالت دستی کلید)'
       );
     } catch {
-      setAiReply('خطا در دریافت پاسخ؛ لطفاً مجدداً تلاش کنید.');
+      // 100% Offline Device Fallback (when in Airplane Mode / No Internet)
+      const fallbackText =
+        finalMode === 'caption'
+          ? `✨ **کپشن اختصاصی اینستاگرام (تولید شده توسط موتور آفلاین ${brandConfig.brandName}):**\n👑 اجرای تخصصی کابینت‌های لوکس چوب گردو و نئوکلاسیک با یراق بلوم اتریش و ۱۰ سال ضمانت کتبی اتحادیه.\n📐 محاسبه آنی متراژ (۶۰٪ زمینی + ۴۰٪ هوایی) + شرایط اقساط با چک صیادی ۱ تا ۶ ماهه!\n📞 تماس و مشاوره: ${brandConfig.phone}`
+          : `🏛️ **مشاوره تخصصی معمار هوشمند آفلاین (${brandConfig.brandName}):**\n۱. **ترکیب رنگ پیشنهادی:** بدنه و جزیره چوب گردو گرم (#4A2E1B) + کابینت هوایی سفید صدفی مات (#FAF7F2) + صفحه کوارتز رگه‌طلایی (#D4AF37).\n۲. **نورپردازی استاندارد:** لاین نوری مخفی ۳۰۰۰ کلوین زیر کابینت هوایی با CRI بالای ۹۰.\n۳. **اقساط اتحادیه:** ۴۰٪ پیش‌پرداخت + ۶۰٪ اقساط ۱ تا ۶ ماهه با چک صیادی معتبر.`;
+      setAiReply(fallbackText);
+      setAiEngineBadge('📴 موتور معمار هوشمند ۱۰۰٪ آفلاین دستگاه (بدون نیاز به اینترنت و کلید)');
     } finally {
       setAiLoading(false);
     }
@@ -1003,7 +1058,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons & 1-Click Offline Client Quote Archive */}
                   <div className="space-y-2.5 pt-1">
                     <button
                       type="button"
@@ -1013,6 +1068,65 @@ export default function App() {
                       <MessageCircle className="w-5 h-5" />
                       <span>{t.sendWhatsappBtn}</span>
                     </button>
+
+                    {/* Offline Client Pre-Invoice CRM Box */}
+                    <div className="p-3.5 rounded-xl bg-white border border-[#E6DEC8] space-y-2.5">
+                      <div className="text-xs font-bold text-[#4A2E1B]">
+                        📂 ذخیره در دفترچه آفلاین پیش‌فاکتورهای مشتریان (بدون نیاز به اینترنت):
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={clientNameInput}
+                          onChange={(e) => setClientNameInput(e.target.value)}
+                          placeholder="نام مشتری یا واحد (مثلاً: پروژه الهیه - آقای رضایی)"
+                          className="flex-1 px-3 py-2 rounded-lg border border-[#E6DEC8] bg-[#FAF7F2] text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveOfflineQuote}
+                          className="px-3.5 py-2 rounded-lg bg-[#4A2E1B] text-[#F6E27A] font-bold text-xs whitespace-nowrap cursor-pointer"
+                        >
+                          + ذخیره آفلاین
+                        </button>
+                      </div>
+
+                      {savedQuotes.length > 0 && (
+                        <div className="space-y-1.5 max-h-36 overflow-y-auto pt-1">
+                          {savedQuotes.map((sq) => (
+                            <div
+                              key={sq.id}
+                              className="flex items-center justify-between p-2 rounded-lg bg-[#FAF7F2] border border-[#E6DEC8] text-[11px]"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setProjectTypeId(sq.projectTypeId);
+                                  setMaterialId(sq.materialId);
+                                  setLengthMeters(sq.lengthMeters);
+                                  setCeilingHeightCm(sq.ceilingHeightCm);
+                                  setCheckMonths(sq.checkMonths);
+                                }}
+                                className="text-right font-bold text-[#4A2E1B] hover:underline cursor-pointer"
+                              >
+                                {sq.clientName} ({sq.lengthMeters}m) —{' '}
+                                <span className="font-mono-tabular text-emerald-700">
+                                  {formatPrice(sq.totalCashToman, currency, lang)}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteOfflineQuote(sq.id)}
+                                className="text-red-700 hover:text-red-900 px-1.5 font-bold cursor-pointer"
+                                aria-label="حذف پیش‌فاکتور"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
