@@ -45,6 +45,10 @@ import {
   CustomBrandConfig,
 } from './components/WhiteLabelAffiliateSection';
 import {
+  VipCommercialEnterpriseSuite,
+  TenantExtendedConfig,
+} from './components/VipCommercialEnterpriseSuite';
+import {
   GithubPushModal,
   VipSubscriptionModal,
   AffiliateWhiteLabelModal,
@@ -52,14 +56,25 @@ import {
 } from './components/Modals';
 import { usePWAInstall } from './hooks/usePWAInstall';
 
-const DEFAULT_BRAND_CONFIG: CustomBrandConfig = {
+const makeSlugFromBrand = (text: string) =>
+  text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\u0600-\u06FF-]/g, '') || 'default-decor-vip';
+
+const DEFAULT_TENANT_CONFIG: TenantExtendedConfig = {
+  slug: 'default-decor-vip',
   brandName: 'DecorMate VIP | دکورمِیت',
+  managerName: 'مدیریت مجموعه دکورمِیت',
   tagline: 'اکوسیستم آفرینش | شهر جدید نیومتاورسیتی جهان | توان استیج FBNM',
   phone: '0912-000-0000',
   whatsapp: '989120000000',
   instagram: '@DecorMate.VIP',
   city: 'تهران · اربیل · دبی · استانبول',
   priceMultiplier: 1.0,
+  refCode: 'VIP-25',
+  licenseMode: 'visitor_demo',
 };
 
 export default function App() {
@@ -78,37 +93,112 @@ export default function App() {
   // ADHD Step-by-Step Wizard Tracker
   const [adhdStep, setAdhdStep] = useState<1 | 2 | 3>(1);
 
-  // Personalization / White-Label State (persisted in localStorage)
-  const [brandConfig, setBrandConfig] = useState<CustomBrandConfig>(() => {
+  // Isolated White-Label Tenant & URL Skin State (?tenant=...&manager=...&city=...&phone=...&ref=...)
+  const [tenantConfig, setTenantConfig] = useState<TenantExtendedConfig>(() => {
     try {
-      const saved = localStorage.getItem('decormate_brand_config_v1');
-      return saved ? { ...DEFAULT_BRAND_CONFIG, ...JSON.parse(saved) } : DEFAULT_BRAND_CONFIG;
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const urlTenant = params.get('tenant');
+        const urlManager = params.get('manager');
+        const urlCity = params.get('city');
+        const urlPhone = params.get('phone');
+        const urlTagline = params.get('tagline');
+        const urlMultiplier = params.get('multiplier');
+        const urlRef = params.get('ref');
+
+        if (urlTenant) {
+          const slug = makeSlugFromBrand(urlTenant);
+          const existingTenantRaw = localStorage.getItem(`decormate_tenant_cfg_${slug}`);
+          const existingTenant = existingTenantRaw ? JSON.parse(existingTenantRaw) : {};
+          const phoneVal = urlPhone || existingTenant.phone || DEFAULT_TENANT_CONFIG.phone;
+          const merged: TenantExtendedConfig = {
+            ...DEFAULT_TENANT_CONFIG,
+            ...existingTenant,
+            slug,
+            brandName: urlTenant,
+            managerName: urlManager || existingTenant.managerName || 'مدیریت محترم واحد صنفی',
+            city: urlCity || existingTenant.city || 'تهران',
+            phone: phoneVal,
+            whatsapp: phoneVal.replace(/\D/g, '').replace(/^0/, '98') || '989120000000',
+            tagline: urlTagline || existingTenant.tagline || DEFAULT_TENANT_CONFIG.tagline,
+            priceMultiplier: urlMultiplier
+              ? Number(urlMultiplier) || 1.0
+              : existingTenant.priceMultiplier || 1.0,
+            refCode: urlRef || existingTenant.refCode || 'VIP-25',
+            licenseMode: 'visitor_demo',
+          };
+          localStorage.setItem(`decormate_tenant_cfg_${slug}`, JSON.stringify(merged));
+          localStorage.setItem('decormate_active_slug_v1', slug);
+          return merged;
+        }
+
+        const activeSlug = localStorage.getItem('decormate_active_slug_v1') || 'default-decor-vip';
+        const savedTenant = localStorage.getItem(`decormate_tenant_cfg_${activeSlug}`);
+        if (savedTenant) {
+          return { ...DEFAULT_TENANT_CONFIG, ...JSON.parse(savedTenant) };
+        }
+      }
+      const savedLegacy = localStorage.getItem('decormate_brand_config_v1');
+      return savedLegacy
+        ? { ...DEFAULT_TENANT_CONFIG, ...JSON.parse(savedLegacy) }
+        : DEFAULT_TENANT_CONFIG;
     } catch {
-      return DEFAULT_BRAND_CONFIG;
+      return DEFAULT_TENANT_CONFIG;
     }
   });
 
-  const handleUpdateBrandConfig = (newCfg: CustomBrandConfig) => {
-    setBrandConfig(newCfg);
+  const brandConfig: CustomBrandConfig = tenantConfig;
+
+  const handleUpdateTenantConfig = (newCfg: TenantExtendedConfig) => {
+    const slug = makeSlugFromBrand(newCfg.brandName || newCfg.slug);
+    const normalized: TenantExtendedConfig = { ...newCfg, slug };
+    setTenantConfig(normalized);
     try {
-      localStorage.setItem('decormate_brand_config_v1', JSON.stringify(newCfg));
+      localStorage.setItem(`decormate_tenant_cfg_${slug}`, JSON.stringify(normalized));
+      localStorage.setItem('decormate_active_slug_v1', slug);
+      localStorage.setItem('decormate_brand_config_v1', JSON.stringify(normalized));
     } catch {}
   };
 
+  const handleUpdateBrandConfig = (newCfg: CustomBrandConfig) => {
+    handleUpdateTenantConfig({
+      ...tenantConfig,
+      ...newCfg,
+      slug: makeSlugFromBrand(newCfg.brandName),
+    });
+  };
+
   const handleResetBrandConfig = () => {
-    setBrandConfig(DEFAULT_BRAND_CONFIG);
+    setTenantConfig(DEFAULT_TENANT_CONFIG);
     try {
+      localStorage.setItem('decormate_active_slug_v1', DEFAULT_TENANT_CONFIG.slug);
       localStorage.removeItem('decormate_brand_config_v1');
     } catch {}
   };
+
+  // Sync active tenant name with document.title automatically
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = `${tenantConfig.brandName} | پیش‌فاکتور اتحادیه، چک صیادی و دکوراسیون (${tenantConfig.city})`;
+    }
+  }, [tenantConfig.brandName, tenantConfig.city]);
 
   // Calculator State
   const [projectTypeId, setProjectTypeId] = useState<string>(PROJECT_TYPES[0].id);
   const [materialId, setMaterialId] = useState<string>(MATERIALS[1].id); // Default Neoclassical
   const [lengthMeters, setLengthMeters] = useState<number>(8);
   const [ceilingHeightCm, setCeilingHeightCm] = useState<number>(280);
-  const [checkMonths, setCheckMonths] = useState<number>(4);
+  const [downPaymentPct, setDownPaymentPct] = useState<number>(30); // Default 30% Cash Down Payment
+  const [checkMonths, setCheckMonths] = useState<number>(6); // Supports 3 to 12 Purple Sayadi Checks
   const [includeBlumAndSlab, setIncludeBlumAndSlab] = useState<boolean>(true);
+  // Central Bank Purple Sayadi Check Color Inquiry Simulator State
+  const [sayadiCheckId, setSayadiCheckId] = useState<string>('9104827563019482');
+  const [sayadiStatus, setSayadiStatus] = useState<'white' | 'yellow' | 'red'>('white');
+  // Inflation-Shield Price Lock Guarantee State
+  const [inflationLockActive, setInflationLockActive] = useState<boolean>(true);
+  const [inflationLockCode] = useState<string>('INF-SHIELD-1405-884');
+  // Cost-Split Slider State (Between Partners / Builder & Owner / Families)
+  const [partnerASharePct, setPartnerASharePct] = useState<number>(50);
   const [clientNameInput, setClientNameInput] = useState<string>('');
   const [savedQuotes, setSavedQuotes] = useState<
     Array<{
@@ -124,12 +214,24 @@ export default function App() {
     }>
   >(() => {
     try {
-      const raw = localStorage.getItem('decormate_offline_quotes_v1');
-      return raw ? JSON.parse(raw) : [];
+      const raw = localStorage.getItem(`decormate_tenant_quotes_${tenantConfig.slug}`);
+      if (raw) return JSON.parse(raw);
+      const fallbackRaw = localStorage.getItem('decormate_offline_quotes_v1');
+      return fallbackRaw ? JSON.parse(fallbackRaw) : [];
     } catch {
       return [];
     }
   });
+
+  // Reload isolated quotes when tenant slug changes
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`decormate_tenant_quotes_${tenantConfig.slug}`);
+      setSavedQuotes(raw ? JSON.parse(raw) : []);
+    } catch {
+      setSavedQuotes([]);
+    }
+  }, [tenantConfig.slug]);
 
   // Showcase State
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -231,10 +333,54 @@ export default function App() {
 
   // Cash price has 5% special discount
   const totalCashPriceToman = Math.round(totalGrossToman * 0.95);
-  // Installment plan: 40% Down Payment + 60% split across 1..6 Sayadi checks
-  const downPayment40Toman = Math.round(totalGrossToman * 0.4);
+  // Configurable Down Payment (e.g. 30% or 40%) + Remaining balance split across 3..12 Purple Sayadi checks
+  const downPayment40Toman = Math.round(totalGrossToman * (downPaymentPct / 100));
   const remaining60Toman = totalGrossToman - downPayment40Toman;
   const eachCheckAmountToman = Math.round(remaining60Toman / Math.max(1, checkMonths));
+
+  // Cost-Split calculation (Between Party A & Party B / Builder & Owner)
+  const partnerBSharePct = 100 - partnerASharePct;
+  const partnerATotalToman = Math.round(totalGrossToman * (partnerASharePct / 100));
+  const partnerBTotalToman = totalGrossToman - partnerATotalToman;
+
+  // Generate Solar Hijri Due Date Schedule Table for Purple Sayadi Checks
+  const sayadiCheckSchedule = Array.from({ length: checkMonths }, (_, idx) => {
+    const dueDate = new Date();
+    dueDate.setMonth(dueDate.getMonth() + idx + 1);
+    let solarDateStr = `${idx + 1} ماه بعد`;
+    try {
+      solarDateStr = dueDate.toLocaleDateString('fa-IR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    } catch {}
+    return {
+      checkNumber: idx + 1,
+      dueDateFa: solarDateStr,
+      serialCode: `${sayadiCheckId.slice(0, 8)}-${101 + idx}`,
+      amountToman: eachCheckAmountToman,
+    };
+  });
+
+  const sayadiStatusMeta =
+    sayadiStatus === 'white'
+      ? {
+          badge: 'وضعیت سفید بانک مرکزی (بدون چک برگشتی)',
+          score: '895 / 1000 (رتبه اعتباری A+ عالی)',
+          colorClass: 'bg-emerald-50 border-emerald-400 text-emerald-950',
+        }
+      : sayadiStatus === 'yellow'
+      ? {
+          badge: 'وضعیت زرد بانک مرکزی (۱ فقره سابقه تسویه‌شده)',
+          score: '645 / 1000 (رتبه اعتباری B — نیاز به ضامن)',
+          colorClass: 'bg-amber-50 border-amber-400 text-amber-950',
+        }
+      : {
+          badge: 'وضعیت قرمز بانک مرکزی (دارای چک برگشتی فعال)',
+          score: '310 / 1000 (رتبه C — فقط تسویه نقدی مجاز است)',
+          colorClass: 'bg-red-50 border-red-400 text-red-950',
+        };
 
   // Engineering Sheet & Hardware Estimator (Creative Value-Add)
   const estimatedMdfSheets = Math.max(2, Math.ceil(lengthMeters * 1.65));
@@ -251,7 +397,7 @@ export default function App() {
 
     const speechText =
       lang === 'fa' || lang === 'ku'
-        ? `پیش‌فاکتور رسمی ${brandConfig.brandName}. پروژه ${projectTitle}، با متریال ${matTitle}، به متراژ ${lengthMeters} متر. مبلغ کل نقد با پنج درصد تخفیف: ${cashFormatted}. شرایط اقساط چک صیادی: پیش‌پرداخت نقد چهل درصد معادل ${downFormatted}، و ${checkMonths} فقره چک صیادی ماهانه هر کدام به مبلغ ${checkFormatted}.`
+        ? `پیش‌فاکتور رسمی ${brandConfig.brandName}. پروژه ${projectTitle}، با متریال ${matTitle}، به متراژ ${lengthMeters} متر. مبلغ کل نقد با پنج درصد تخفیف: ${cashFormatted}. شرایط اقساط چک صیادی بنفش: پیش‌پرداخت نقد ${downPaymentPct} درصد معادل ${downFormatted}، و ${checkMonths} فقره چک صیادی ماهانه هر کدام به مبلغ ${checkFormatted}.`
         : `${brandConfig.brandName} Official Pre-Invoice. ${projectTitle}, material ${matTitle}, length ${lengthMeters} meters. Total cash price: ${cashFormatted}. Down payment: ${downFormatted}, plus ${checkMonths} monthly checks of ${checkFormatted} each.`;
 
     speakText(speechText);
@@ -260,21 +406,43 @@ export default function App() {
   const handleSendInvoiceToWhatsApp = () => {
     const projectTitle = selectedProject.names[lang] || selectedProject.names.fa;
     const matTitle = selectedMaterial.names[lang] || selectedMaterial.names.fa;
-    const msg = `👑 *پیش‌فاکتور رسمی سامانه هوشمند ${brandConfig.brandName}*
-📍 ${brandConfig.tagline}
+    const scheduleLines = sayadiCheckSchedule
+      .slice(0, 6)
+      .map(
+        (c) =>
+          `   • چک ${c.checkNumber} (${c.dueDateFa}): ${formatPrice(c.amountToman, currency, lang)}`
+      )
+      .join('\n');
+
+    const msg = `👑 *پیش‌فاکتور رسمی طلاکوب سامانه هوشمند ${brandConfig.brandName}*
+👤 مدیریت: ${tenantConfig.managerName} | 📍 شهر: ${tenantConfig.city}
 ━━━━━━━━━━━━━━━━━━
 📐 *نوع پروژه:* ${projectTitle}
 🪵 *متریال انتخابی:* ${matTitle}
 📏 *متراژ:* ${lengthMeters} (${selectedProject.unitLabel[lang] || selectedProject.unitLabel.fa}) | *ارتفاع سقف:* ${ceilingHeightCm} سم
-🔩 *یراق بلوم اتریش و صفحه ۵ سانتی:* ${includeBlumAndSlab ? 'بله (فول اتریشی)' : 'استاندارد پایه'}
-📦 *تخمین متریال مصرفی:* ${estimatedMdfSheets} ورق MDF + ${estimatedBlumHinges} عدد لولا بلوم + ${estimatedCountertopMeters} متر صفحه
+🔩 *یراق بلوم اتریش و صفحه کوارتز ۵ سانتی:* ${includeBlumAndSlab ? 'بله (فول اتریشی)' : 'استاندارد پایه'}
+📦 *تخمین مهندسی متریال:* ${estimatedMdfSheets} ورق MDF + ${estimatedBlumHinges} لولا بلوم + ${estimatedCountertopMeters} متر صفحه
 ━━━━━━━━━━━━━━━━━━
-💰 *مبلغ کل نقد (با ۵٪ تخفیف):* ${formatPrice(totalCashPriceToman, currency, lang)}
-💳 *پیش‌پرداخت قرارداد (۴۰٪):* ${formatPrice(downPayment40Toman, currency, lang)}
-📝 *اقساط چک صیادی (${checkMonths} ماهه):* ماهانه ${formatPrice(eachCheckAmountToman, currency, lang)}
-🛡️ *ضمانت کتبی اتحادیه:* ${selectedMaterial.warrantyYears} سال
+💰 *مبلغ کل نقد (با ۵٪ تخفیف تسویه نقد):* ${formatPrice(totalCashPriceToman, currency, lang)}
+💳 *پیش‌پرداخت نقدی قرارداد (${downPaymentPct}٪):* ${formatPrice(downPayment40Toman, currency, lang)}
+🟣 *تقسیط چک صیادی بنفش (${checkMonths} فقره ماهانه):* هر چک ${formatPrice(eachCheckAmountToman, currency, lang)}
+📅 *جدول سررسید چک‌های صیادی بنفش:*
+${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره چک ماهانه دیگر` : ''}
 ━━━━━━━━━━━━━━━━━━
-لطفاً جهت هماهنگی بازدید و اندازه‌گیری دقیق سه‌بعدی (3D Max) راهنمایی فرمایید.`;
+🏦 *گواهی استعلام چک صیادی بانک مرکزی:* ${sayadiStatusMeta.badge} (شناسه: ${sayadiCheckId})
+🛡️ *گواهی قفل ضدتورم ورق و یراق:* ${
+      inflationLockActive
+        ? `فعال (کد رهگیری ${inflationLockCode} — تثبیت ۱۰۰٪ نرخ ورق، کوارتز و یراق بلوم از لحظه بیعانه تا تحویل)`
+        : 'غیرفعال'
+    }
+⚖️ *تسهیم شفاف هزینه:* سهم طرف اول (${partnerASharePct}٪): ${formatPrice(
+      partnerATotalToman,
+      currency,
+      lang
+    )} | سهم طرف دوم (${partnerBSharePct}٪): ${formatPrice(partnerBTotalToman, currency, lang)}
+🎖️ *کد سفیر / مرجع:* ${tenantConfig.refCode}
+━━━━━━━━━━━━━━━━━━
+📞 تماس و هماهنگی بازدید سه‌بعدی: ${brandConfig.phone}`;
 
     const cleanWa = brandConfig.whatsapp.replace(/\D/g, '') || '989120000000';
     window.location.href = `https://wa.me/${cleanWa}?text=${encodeURIComponent(msg)}`;
@@ -303,6 +471,7 @@ export default function App() {
     setSavedQuotes(updated);
     setClientNameInput('');
     try {
+      localStorage.setItem(`decormate_tenant_quotes_${tenantConfig.slug}`, JSON.stringify(updated));
       localStorage.setItem('decormate_offline_quotes_v1', JSON.stringify(updated));
     } catch {}
   };
@@ -311,6 +480,7 @@ export default function App() {
     const updated = savedQuotes.filter((q) => q.id !== id);
     setSavedQuotes(updated);
     try {
+      localStorage.setItem(`decormate_tenant_quotes_${tenantConfig.slug}`, JSON.stringify(updated));
       localStorage.setItem('decormate_offline_quotes_v1', JSON.stringify(updated));
     } catch {}
   };
@@ -431,28 +601,31 @@ export default function App() {
             <span>{brandConfig.brandName}</span>
           </a>
 
-          {/* Zone 2: Clean Text Navigation Links */}
+          {/* Zone 2: Clean Text Navigation Links + VIP Commercial Playbook Quick Links */}
           <nav
             aria-label="Main Navigation"
-            className="hidden xl:flex items-center gap-6 text-xs sm:text-sm font-semibold text-[#6F4E37]"
+            className="hidden xl:flex flex-wrap items-center gap-4 text-xs font-semibold text-[#6F4E37]"
           >
-            <a href="#calculator" className="hover:text-[#4A2E1B] hover:underline underline-offset-4">
-              {t.navCalculator}
+            <a href="#calculator" className="hover:text-[#4A2E1B] hover:underline underline-offset-4 font-bold text-[#4A2E1B]">
+              📐 {t.navCalculator}
+            </a>
+            <a href="#deliverables" className="px-2.5 py-1 rounded-lg bg-amber-50 border border-[#D4AF37] text-[#4A2E1B] font-extrabold hover:bg-[#D4AF37]/20">
+              🎁 دستاوردهای خریدار و ROI (#deliverables)
+            </a>
+            <a href="#visitor-playbook" className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-400 text-emerald-900 font-extrabold hover:bg-emerald-100">
+              🧭 راهنمای ویزیتورها (#visitor-playbook)
+            </a>
+            <a href="#golden-formula" className="hover:text-[#4A2E1B] hover:underline underline-offset-4 text-amber-800 font-bold">
+              🏆 فرمول طلایی فروش
+            </a>
+            <a href="#invitation-letter" className="hover:text-[#4A2E1B] hover:underline underline-offset-4 text-emerald-700 font-bold">
+              📜 دعوت‌نامه طلاکوب و شبا ۲۵٪
             </a>
             <a href="#showcase" className="hover:text-[#4A2E1B] hover:underline underline-offset-4">
               {t.navShowcase}
             </a>
-            <a href="#bi-dashboard" className="hover:text-[#4A2E1B] hover:underline underline-offset-4">
-              {t.navDashboard}
-            </a>
-            <a href="#ai-architect" className="hover:text-[#4A2E1B] hover:underline underline-offset-4">
-              {t.navAiArchitect}
-            </a>
-            <a
-              href="#whitelabel-visitor-hub"
-              className="hover:text-[#4A2E1B] hover:underline underline-offset-4 text-emerald-700 font-bold"
-            >
-              شخصی‌سازی برند و درآمد ۲۵٪ ویزیتورها
+            <a href="#whitelabel-visitor-hub" className="hover:text-[#4A2E1B] hover:underline underline-offset-4">
+              شخصی‌سازی برند
             </a>
           </nav>
 
@@ -616,6 +789,138 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* Top Quick-Access Bar for VIP Commercial Playbook, Isolated Tenant Skin, ROI (#deliverables), Visitor Playbook & 25% Sheba Hub */}
+      <div className="bg-[#352012] text-[#FAF7F2] border-b border-[#D4AF37]/50 px-4 sm:px-8 py-2 text-xs">
+        <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <a
+              href="#isolated-tenant-architecture"
+              className="px-2.5 py-1.5 rounded-lg bg-[#D4AF37] text-[#2A1A10] font-extrabold hover:bg-[#F6E27A] transition-colors whitespace-nowrap"
+            >
+              ⚡ ۱. پیش‌نمایش ۱۰ ثانیه‌ای تبلت ویزیتور (URL Skin)
+            </a>
+            <a
+              href="#calculator"
+              className="px-2.5 py-1.5 rounded-lg bg-purple-800 text-white font-bold hover:bg-purple-700 transition-colors whitespace-nowrap"
+            >
+              🟣 ۲. ماشین‌حساب + چک صیادی بنفش + قفل ضدتورم
+            </a>
+            <a
+              href="#deliverables"
+              className="px-2.5 py-1.5 rounded-lg bg-emerald-700 text-white font-bold hover:bg-emerald-600 transition-colors whitespace-nowrap"
+            >
+              🎁 ۳. دستاوردهای خریدار + ماشین‌حساب ROI (#deliverables)
+            </a>
+            <a
+              href="#visitor-playbook"
+              className="px-2.5 py-1.5 rounded-lg bg-white/15 text-[#F6E27A] border border-[#D4AF37]/40 font-bold hover:bg-white/25 transition-colors whitespace-nowrap"
+            >
+              🧭 ۴. راهنمای ویزیتورها (#visitor-playbook)
+            </a>
+            <a
+              href="#golden-formula"
+              className="px-2.5 py-1.5 rounded-lg bg-amber-500/25 text-[#F6E27A] border border-[#D4AF37]/50 font-bold hover:bg-amber-500/35 transition-colors whitespace-nowrap"
+            >
+              🏆 فرمول طلایی فروش (#golden-formula)
+            </a>
+            <a
+              href="#invitation-letter"
+              className="px-2.5 py-1.5 rounded-lg bg-white/15 text-emerald-300 border border-emerald-400/40 font-bold hover:bg-white/25 transition-colors whitespace-nowrap"
+            >
+              📜 ۵. دعوت‌نامه طلاکوب + شبا ۲۵٪ (#invitation-letter)
+            </a>
+          </div>
+          <span className="text-[11px] font-mono-tabular text-[#F6E27A]">
+            کد ایزوله فعال: {tenantConfig.slug} | سفیر: ?ref={tenantConfig.refCode}
+          </span>
+        </div>
+
+        {/* Instant 10-Second Visitor Top Bar for Live In-Store Customization */}
+        <div className="max-w-[1440px] mx-auto mt-2 pt-2 border-t border-[#D4AF37]/30 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 items-center">
+          <input
+            type="text"
+            value={tenantConfig.brandName}
+            onChange={(e) =>
+              handleUpdateTenantConfig({ ...tenantConfig, brandName: e.target.value })
+            }
+            placeholder="نام کسب‌وکار..."
+            aria-label="نام کسب‌وکار در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-bold"
+          />
+          <input
+            type="text"
+            value={tenantConfig.managerName}
+            onChange={(e) =>
+              handleUpdateTenantConfig({ ...tenantConfig, managerName: e.target.value })
+            }
+            placeholder="نام مدیر..."
+            aria-label="نام مدیر در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-bold"
+          />
+          <input
+            type="text"
+            value={tenantConfig.city}
+            onChange={(e) => handleUpdateTenantConfig({ ...tenantConfig, city: e.target.value })}
+            placeholder="شهر / منطقه..."
+            aria-label="شهر در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px]"
+          />
+          <input
+            type="text"
+            dir="ltr"
+            value={tenantConfig.phone}
+            onChange={(e) =>
+              handleUpdateTenantConfig({
+                ...tenantConfig,
+                phone: e.target.value,
+                whatsapp: e.target.value.replace(/\D/g, '').replace(/^0/, '98') || '989120000000',
+              })
+            }
+            placeholder="واتساپ: 0912..."
+            aria-label="شماره واتساپ در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-mono-tabular"
+          />
+          <input
+            type="text"
+            value={tenantConfig.tagline}
+            onChange={(e) =>
+              handleUpdateTenantConfig({ ...tenantConfig, tagline: e.target.value })
+            }
+            placeholder="شعار برند..."
+            aria-label="شعار برند در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px]"
+          />
+          <select
+            value={tenantConfig.priceMultiplier}
+            onChange={(e) =>
+              handleUpdateTenantConfig({
+                ...tenantConfig,
+                priceMultiplier: Number(e.target.value) || 1.0,
+              })
+            }
+            aria-label="ضریب قیمت در نوار بالای صفحه"
+            className="px-2 py-1.5 rounded-lg bg-[#2A1A10] border border-[#D4AF37]/50 text-[#F6E27A] text-[11px] font-bold font-mono-tabular"
+          >
+            <option value={0.9}>ضریب قیمت: ۰.۹ (-۱۰٪)</option>
+            <option value={0.95}>ضریب قیمت: ۰.۹۵ (-۵٪)</option>
+            <option value={1.0}>ضریب قیمت: ۱.۰ (پایه)</option>
+            <option value={1.08}>ضریب قیمت: ۱.۰۸ (+۸٪)</option>
+            <option value={1.15}>ضریب قیمت: ۱.۱۵ (+۱۵٪)</option>
+          </select>
+          <input
+            type="text"
+            dir="ltr"
+            value={tenantConfig.refCode}
+            onChange={(e) =>
+              handleUpdateTenantConfig({ ...tenantConfig, refCode: e.target.value })
+            }
+            placeholder="کد سفیر: VIP-25"
+            aria-label="کد سفیر ویزیتور در نوار بالای صفحه"
+            className="px-2.5 py-1.5 rounded-lg bg-emerald-900/40 border border-emerald-400/50 text-emerald-200 text-[11px] font-mono-tabular font-bold"
+          />
+        </div>
+      </div>
 
       <main id="top" className="flex-1">
         {/* Dedicated 1-Click Accessibility (Disability/Low-Vision/Motor), ADHD Focus & Automated Gradle APK/AAB Bar */}
@@ -967,31 +1272,52 @@ export default function App() {
 
                       <div>
                         <div className="flex items-center justify-between text-xs font-bold text-[#4A2E1B] mb-1.5">
-                          <span>{t.checkMonthsLabel}</span>
-                          <span className="font-mono-tabular text-emerald-700">
-                            {checkMonths} فقره چک صیادی
+                          <span>درصد پیش‌پرداخت نقدی قرارداد:</span>
+                          <span className="font-mono-tabular text-[#4A2E1B]">{downPaymentPct}% نقد</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1 mb-3">
+                          {[30, 35, 40, 50].map((pct) => (
+                            <button
+                              key={pct}
+                              type="button"
+                              onClick={() => setDownPaymentPct(pct)}
+                              className={`py-1.5 rounded-lg font-mono-tabular text-xs font-bold border cursor-pointer ${
+                                downPaymentPct === pct
+                                  ? 'bg-[#4A2E1B] text-[#F6E27A] border-[#D4AF37]'
+                                  : 'bg-white text-[#4A2E1B] border-[#E6DEC8]'
+                              }`}
+                            >
+                              {pct}%
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs font-bold text-[#4A2E1B] mb-1.5">
+                          <span>🟣 تقسیط چک صیادی بنفش (۳ تا ۱۲ فقره):</span>
+                          <span className="font-mono-tabular text-purple-800">
+                            {checkMonths} فقره چک صیادی بنفش
                           </span>
                         </div>
-                        <div className="grid grid-cols-6 gap-1">
-                          {[1, 2, 3, 4, 5, 6].map((m) => (
+                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
+                          {[1, 2, 3, 4, 6, 8, 10, 12].map((m) => (
                             <button
                               key={m}
                               type="button"
                               onClick={() => setCheckMonths(m)}
                               className={`py-2 rounded-lg font-mono-tabular text-xs font-bold border cursor-pointer ${
                                 checkMonths === m
-                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  ? 'bg-purple-800 text-white border-purple-900'
                                   : 'bg-white text-[#4A2E1B] border-[#E6DEC8]'
                               }`}
                             >
-                              {m} ماه
+                              {m} چک
                             </button>
                           ))}
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-1">
+                    <div className="pt-1 space-y-3">
                       <button
                         type="button"
                         onClick={() => setIncludeBlumAndSlab(!includeBlumAndSlab)}
@@ -1002,10 +1328,128 @@ export default function App() {
                         }`}
                       >
                         <span>
-                          🔩 پکیج صفحه شرکتی ۵ سانتی ضدآب + لولا و جک آرام‌بند بلوم اتریش (Blum)
+                          🔩 پکیج صفحه کوارتز ۵ سانتی ضدآب + لولا و جک آرام‌بند بلوم اتریش (Blum)
                         </span>
                         <span>{includeBlumAndSlab ? '✓ محاسبه شده' : '+ افزودن به پیش‌فاکتور'}</span>
                       </button>
+
+                      {/* Inflation-Shield Price Lock Guarantee Button */}
+                      <div className="p-3.5 rounded-xl bg-amber-50/90 border-2 border-[#D4AF37] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-extrabold text-[#4A2E1B] flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                            <span>🛡️ قفل ضمانت قیمت ضدتورم ورق، چوب و یراق (Inflation-Shield Guarantee)</span>
+                          </div>
+                          <p className="text-[11px] text-[#6F4E37]">
+                            تثبیت ۱۰۰٪ نرخ ورق MDF، صفحه کوارتز و یراق بلوم اتریش از لحظه پرداخت بیعانه تا روز تحویل نهایی (کد گواهی: {inflationLockCode})
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setInflationLockActive(!inflationLockActive)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap cursor-pointer ${
+                            inflationLockActive
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-white border border-[#4A2E1B] text-[#4A2E1B]'
+                          }`}
+                        >
+                          {inflationLockActive ? '🔒 قفل ضدتورم فعال است' : 'فعال‌سازی قفل ضدتورم'}
+                        </button>
+                      </div>
+
+                      {/* Live Central Bank Sayadi Check Color Inquiry Simulator */}
+                      <div className="p-4 rounded-xl bg-white border-2 border-purple-300 space-y-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold text-purple-950">
+                            🟣 شبیه‌ساز زنده «استعلام رنگ چک صیادی بانک مرکزی (سفید / زرد / قرمز)»:
+                          </span>
+                          <span className="text-[11px] font-mono-tabular font-bold text-purple-800">
+                            {sayadiStatusMeta.score}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                          <input
+                            type="text"
+                            dir="ltr"
+                            maxLength={16}
+                            value={sayadiCheckId}
+                            onChange={(e) => setSayadiCheckId(e.target.value.replace(/\D/g, ''))}
+                            placeholder="شناسه ۱۶ رقمی چک صیادی..."
+                            className="sm:col-span-5 px-3 py-2 rounded-lg bg-[#FAF7F2] border border-purple-300 font-mono-tabular text-xs font-bold text-purple-950"
+                          />
+                          <div className="sm:col-span-7 grid grid-cols-3 gap-1.5 text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => setSayadiStatus('white')}
+                              className={`py-2 px-2 rounded-lg font-bold border cursor-pointer ${
+                                sayadiStatus === 'white'
+                                  ? 'bg-emerald-600 text-white border-emerald-700'
+                                  : 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                              }`}
+                            >
+                              ⚪ وضعیت سفید
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSayadiStatus('yellow')}
+                              className={`py-2 px-2 rounded-lg font-bold border cursor-pointer ${
+                                sayadiStatus === 'yellow'
+                                  ? 'bg-amber-500 text-black border-amber-600'
+                                  : 'bg-amber-50 text-amber-900 border-amber-200'
+                              }`}
+                            >
+                              🟡 وضعیت زرد
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSayadiStatus('red')}
+                              className={`py-2 px-2 rounded-lg font-bold border cursor-pointer ${
+                                sayadiStatus === 'red'
+                                  ? 'bg-red-600 text-white border-red-700'
+                                  : 'bg-red-50 text-red-900 border-red-200'
+                              }`}
+                            >
+                              🔴 وضعیت قرمز
+                            </button>
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-lg border text-xs font-bold ${sayadiStatusMeta.colorClass}`}>
+                          ✓ گواهی استعلام ثبت‌شده در پیش‌فاکتور: {sayadiStatusMeta.badge} — امتیاز: {sayadiStatusMeta.score}
+                        </div>
+                      </div>
+
+                      {/* Transparent Cost-Split Slider (Between Partners / Builder & Owner / Families) */}
+                      <div className="p-3.5 rounded-xl bg-white border border-[#E6DEC8] space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-[#4A2E1B]">
+                          <span>⚖️ اسلایدر تقسیم و تسهیم شفاف هزینه (بین شرکا، سازنده و مالک یا خانواده‌ها):</span>
+                          <span className="font-mono-tabular text-emerald-700">
+                            {partnerASharePct}% / {partnerBSharePct}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={10}
+                          max={90}
+                          step={5}
+                          value={partnerASharePct}
+                          onChange={(e) => setPartnerASharePct(Number(e.target.value))}
+                          className="w-full accent-[#4A2E1B] cursor-pointer"
+                        />
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="p-2 rounded-lg bg-[#FAF7F2] border border-[#E6DEC8]">
+                            <span className="text-[#6F4E37] block">سهم طرف اول / سازنده ({partnerASharePct}%):</span>
+                            <strong className="font-mono-tabular text-[#4A2E1B]">
+                              {formatPrice(partnerATotalToman, currency, lang)}
+                            </strong>
+                          </div>
+                          <div className="p-2 rounded-lg bg-[#FAF7F2] border border-[#E6DEC8]">
+                            <span className="text-[#6F4E37] block">سهم طرف دوم / خریدار ({partnerBSharePct}%):</span>
+                            <strong className="font-mono-tabular text-emerald-700">
+                              {formatPrice(partnerBTotalToman, currency, lang)}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {adhdFocusMode && (
@@ -1124,33 +1568,83 @@ export default function App() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="p-3.5 rounded-xl bg-white border border-[#E6DEC8]">
-                        <div className="text-[11px] text-[#6F4E37] mb-1">{t.downPaymentLabel}</div>
+                        <div className="text-[11px] text-[#6F4E37] mb-1">
+                          پیش‌پرداخت نقدی قرارداد ({downPaymentPct}%):
+                        </div>
                         <div className="text-base font-extrabold font-mono-tabular text-[#4A2E1B]">
                           {formatPrice(downPayment40Toman, currency, lang)}
                         </div>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300">
-                        <div className="text-[11px] text-emerald-900 mb-1">
-                          {t.monthlyCheckLabel} ({checkMonths} فقره):
+                      <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-300">
+                        <div className="text-[11px] text-purple-950 mb-1">
+                          🟣 مبلغ هر چک صیادی بنفش ({checkMonths} فقره):
                         </div>
-                        <div className="text-base font-extrabold font-mono-tabular text-emerald-800">
+                        <div className="text-base font-extrabold font-mono-tabular text-purple-900">
                           {formatPrice(eachCheckAmountToman, currency, lang)}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Solar Hijri Due Date Schedule Table for Purple Sayadi Checks */}
+                    <div className="p-3.5 rounded-xl bg-white border border-purple-300 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-extrabold text-purple-950">
+                        <span>📅 جدول تاریخ‌های سررسید شمسی چک‌های صیادی بنفش:</span>
+                        <span className="text-[10px] font-mono-tabular text-emerald-700">
+                          {inflationLockActive ? `🔒 قفل ضدتورم: ${inflationLockCode}` : 'نرخ روز'}
+                        </span>
+                      </div>
+                      <div className="max-h-36 overflow-y-auto">
+                        <table className="w-full text-right text-[11px] border-collapse">
+                          <thead>
+                            <tr className="bg-purple-900 text-white">
+                              <th className="p-1.5 rounded-tr-lg">ردیف چک</th>
+                              <th className="p-1.5">سررسید شمسی</th>
+                              <th className="p-1.5">شناسه صیادی</th>
+                              <th className="p-1.5 rounded-tl-lg">مبلغ چک</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sayadiCheckSchedule.map((chk) => (
+                              <tr key={chk.checkNumber} className="border-b border-purple-100">
+                                <td className="p-1.5 font-bold text-purple-900">
+                                  چک صیادی #{chk.checkNumber}
+                                </td>
+                                <td className="p-1.5 font-mono-tabular">{chk.dueDateFa}</td>
+                                <td className="p-1.5 font-mono-tabular text-[#6F4E37]" dir="ltr">
+                                  {chk.serialCode}
+                                </td>
+                                <td className="p-1.5 font-mono-tabular font-bold text-emerald-800">
+                                  {formatPrice(chk.amountToman, currency, lang)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Buttons & 1-Click Offline Client Quote Archive */}
                   <div className="space-y-2.5 pt-1">
-                    <button
-                      type="button"
-                      onClick={handleSendInvoiceToWhatsApp}
-                      className="w-full py-4 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                      <span>{t.sendWhatsappBtn}</span>
-                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                      <button
+                        type="button"
+                        onClick={handleSendInvoiceToWhatsApp}
+                        className="sm:col-span-8 py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <MessageCircle className="w-5 h-5 shrink-0" />
+                        <span>شلیک ۱-کلیکی پیش‌فاکتور طلاکوب به واتساپ مشتری و مدیر</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="sm:col-span-4 py-4 px-3 rounded-xl bg-[#4A2E1B] hover:bg-[#352012] text-[#F6E27A] border border-[#D4AF37] font-bold text-xs shadow-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <FileCheck2 className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                        <span>چاپ / PDF رسمی</span>
+                      </button>
+                    </div>
 
                     {/* Offline Client Pre-Invoice CRM Box */}
                     <div className="p-3.5 rounded-xl bg-white border border-[#E6DEC8] space-y-2.5">
@@ -1511,7 +2005,15 @@ export default function App() {
           </div>
         </section>
 
-        {/* Section 5: Live White-Label Personalization, 25% Guaranteed Visitor Income & Creative Critique */}
+        {/* Section 5: Comprehensive VIP Commercial Enterprise Suite (Isolated White-Label URL Skin, 360 Studio, Flash Workshop Tender, #deliverables ROI, #visitor-playbook, #golden-formula, #invitation-letter & 25% Sheba Ledger) */}
+        <VipCommercialEnterpriseSuite
+          tenantConfig={tenantConfig}
+          onUpdateTenantConfig={handleUpdateTenantConfig}
+          currency={currency}
+          lang={lang}
+        />
+
+        {/* Section 6: Live White-Label Personalization, 25% Guaranteed Visitor Income & Creative Critique */}
         <WhiteLabelAffiliateSection
           brandConfig={brandConfig}
           onUpdateBrandConfig={handleUpdateBrandConfig}
