@@ -14,7 +14,13 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import { CurrencyCode, LanguageCode, formatPrice, SUGGESTED_APP_NAMES } from '../data/decorData';
+import {
+  CurrencyCode,
+  LanguageCode,
+  formatPrice,
+  SUGGESTED_APP_NAMES,
+  RELATED_GUILDS_DATA,
+} from '../data/decorData';
 
 export interface CustomBrandConfig {
   brandName: string;
@@ -41,9 +47,27 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
   currency,
   lang,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'personalize' | 'visitor25' | 'critique'>('personalize');
+  const [activeSubTab, setActiveSubTab] = useState<
+    'personalize' | 'guilds' | 'visitor25' | 'critique'
+  >('personalize');
   const [savedNotice, setSavedNotice] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Live 3-Zone Kitchen Material & Lighting Visualizer State (Creative Feature)
+  const [upperColor, setUpperColor] = useState({
+    name: 'سفید صدفی مات انزو (#FAF7F2)',
+    hex: '#FAF7F2',
+    textHex: '#4A2E1B',
+  });
+  const [slabStyle, setSlabStyle] = useState({
+    name: 'سنگ اسلب مرمر کلکته طلایی (Calacatta Gold)',
+    bg: 'linear-gradient(135deg, #FFFFFF 0%, #F4EFE6 45%, #D4AF37 50%, #FAF7F2 100%)',
+  });
+  const [baseWood, setBaseWood] = useState({
+    name: 'چوب طبیعی گردو آمریکایی (#4A2E1B)',
+    hex: '#4A2E1B',
+  });
+  const [ledKelvin, setLedKelvin] = useState<'3000K' | '4000K' | '6000K'>('3000K');
 
   // Visitor 25% Guaranteed Income Simulator state
   const [monthlyAppSales, setMonthlyAppSales] = useState<number>(8);
@@ -96,35 +120,65 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
           <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-[#FAF7F2] border border-[#E6DEC8] rounded-xl">
             <button
               onClick={() => setActiveSubTab('personalize')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'personalize'
                   ? 'bg-[#4A2E1B] text-[#F6E27A] shadow-sm'
                   : 'text-[#4A2E1B] hover:bg-[#E6DEC8]/40'
               }`}
             >
-              🎨 ۱. شخصی‌سازی زنده برنامه (White-Label)
+              🎨 ۱. شخصی‌سازی زنده برای هر مغازه‌دار
+            </button>
+            <button
+              onClick={() => setActiveSubTab('guilds')}
+              className={`px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                activeSubTab === 'guilds'
+                  ? 'bg-emerald-700 text-white shadow-sm'
+                  : 'text-emerald-800 hover:bg-emerald-50'
+              }`}
+            >
+              📢 ۲. دعوت از ویزیتورها (۲۵٪ سود) + مشاغل مرتبط
             </button>
             <button
               onClick={() => setActiveSubTab('visitor25')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'visitor25'
                   ? 'bg-[#4A2E1B] text-[#F6E27A] shadow-sm'
                   : 'text-[#4A2E1B] hover:bg-[#E6DEC8]/40'
               }`}
             >
-              💰 ۲. سازوکار درآمد تضمینی ویزیتورها (۲۵٪ سود)
+              💰 ۳. ماشین‌حساب درآمد ۲۵٪ ویزیتورها
             </button>
             <button
               onClick={() => setActiveSubTab('critique')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'critique'
                   ? 'bg-[#4A2E1B] text-[#F6E27A] shadow-sm'
                   : 'text-[#4A2E1B] hover:bg-[#E6DEC8]/40'
               }`}
             >
-              💡 ۳. نقد مهندسی و نوآوری‌های خلاقانه برنامه
+              💡 ۴. نقد مهندسی و شبیه‌ساز خلاقانه رنگ
             </button>
           </div>
+        </div>
+
+        {/* High-Impact Visitor Callout Banner Always Visible at Top of Hub */}
+        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-[#4A2E1B] via-[#382213] to-[#24150B] text-white border border-[#D4AF37] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="text-xs font-extrabold text-[#F6E27A] flex items-center gap-1.5">
+              <Handshake className="w-4 h-4 text-[#D4AF37]" />
+              <span>فراخوان رسمی دعوت از ویزیتورها و بازاریابان حضوری/تلفنی سراسر کشور (ایران، اقلیم کردستان، ارمنستان، دبی و ترکیه):</span>
+            </div>
+            <p className="text-xs sm:text-sm text-[#FAF7F2]/95 leading-relaxed">
+              این اپلیکیشن قابلیت **شخصی‌سازی فوری در ۵ ثانیه برای هر مغازه‌دار، نمایشگاه‌دار، کابینت‌ساز، فروشنده پارکت، یراق‌آلات، سنگ اسلب و کناف** را دارد! شما می‌توانید در حضور هر مغازه‌دار، برنامه را به نام مغازه او شخصی‌سازی کرده و از فروش هر نسخه اختصاصی، **۲۵٪ پورسانت نقد و تسویه درجا** دریافت کنید.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('guilds')}
+            className="px-4 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#F6E27A] text-[#2A1A10] font-extrabold text-xs whitespace-nowrap cursor-pointer shrink-0"
+          >
+            مشاهده ۸ شغل خریدار اپ + شخصی‌سازی ۱-کلیکی ←
+          </button>
         </div>
 
         {/* SUB-TAB 1: LIVE WHITE-LABEL PERSONALIZATION FOR CABINET MAKERS & SHOWROOMS */}
@@ -163,7 +217,7 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
                           {item.fullDisplay}
                         </div>
                         <div className={`text-[11px] mt-0.5 ${isSelected ? 'text-white/90' : 'text-[#6F4E37]'}`}>
-                          کوردی: {item.kurdishName} · EN: {item.englishName}
+                          کوردی: {item.kurdishName} · 🇦🇲 HY: {item.armenianName} · EN: {item.englishName}
                         </div>
                         <div className={`text-[10px] mt-1 leading-snug ${isSelected ? 'text-white/80' : 'text-[#6F4E37]'}`}>
                           {item.meaning}
@@ -387,7 +441,96 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
           </div>
         )}
 
-        {/* SUB-TAB 2: 25% GUARANTEED VISITOR INCOME MECHANISM & CALCULATOR */}
+        {/* SUB-TAB 2: INVITE VISITORS (25% COMMISSION) & 8 RELATED PROFESSIONS WHO MUST BUY THIS APP */}
+        {activeSubTab === 'guilds' && (
+          <div className="space-y-6">
+            <div className="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-500 text-emerald-950 space-y-2">
+              <h3 className="text-base sm:text-lg font-extrabold flex items-center gap-2">
+                <Handshake className="w-6 h-6 text-emerald-700 shrink-0" />
+                <span>
+                  🤝 دعوت رسمی از ویزیتورهای حرفه‌ای: چگونه با شخصی‌سازی این اپ برای مغازه‌داران، از هر فروش ۲۵٪ سود نقد کسب کنید؟
+                </span>
+              </h3>
+              <p className="text-xs sm:text-sm leading-relaxed">
+                هر مغازه‌دار، نمایشگاه‌دار یا استادکار در حوزه ساختمان و دکوراسیون، روزانه ده‌ها مشتری را به دلیل **نداشتن ابزار محاسبه فوری متراژ، نداشتن جدول اقساط چک صیادی و نداشتن استوری‌ساز حرفه‌ای** از دست می‌دهد. شما به عنوان ویزیتور، وارد هر یک از **۸ صنف زیر** شوید، با زدن دکمه **«⚡ شخصی‌سازی فوری برای این صنف»** برنامه را با نام همان مغازه به او نشان دهید و درجا **۲۵٪ کل مبلغ فروش برنامه** را به عنوان پورسانت نقد دریافت نمایید!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {RELATED_GUILDS_DATA.map((guild) => {
+                const isApplied = brandConfig.brandName === guild.sampleBrandName;
+                return (
+                  <div
+                    key={guild.id}
+                    className={`p-5 rounded-2xl border-2 flex flex-col justify-between gap-4 transition-colors ${
+                      isApplied
+                        ? 'bg-[#4A2E1B] text-white border-[#D4AF37]'
+                        : 'bg-[#FAF7F2] text-[#2A1A10] border-[#E6DEC8]'
+                    }`}
+                  >
+                    <div className="space-y-2.5">
+                      <h4
+                        className={`text-sm sm:text-base font-extrabold ${
+                          isApplied ? 'text-[#F6E27A]' : 'text-[#4A2E1B]'
+                        }`}
+                      >
+                        {guild.guildTitle}
+                      </h4>
+
+                      <div
+                        className={`p-3 rounded-xl text-xs leading-relaxed ${
+                          isApplied
+                            ? 'bg-white/10 text-white'
+                            : 'bg-white border border-[#E6DEC8] text-[#2A1A10]'
+                        }`}
+                      >
+                        <strong className={isApplied ? 'text-[#F6E27A]' : 'text-emerald-700'}>
+                          🔔 چرا این صنف حتماً باید این برنامه را بخرد؟{' '}
+                        </strong>
+                        {guild.whyMustBuy}
+                      </div>
+
+                      <div
+                        className={`text-xs leading-relaxed ${
+                          isApplied ? 'text-[#E6DEC8]' : 'text-[#6F4E37]'
+                        }`}
+                      >
+                        <strong>💼 تکنیک فروش ویزیتور (پورسانت ۲۵٪): </strong>
+                        {guild.visitorPitchTip}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onUpdateBrandConfig({
+                          ...brandConfig,
+                          brandName: guild.sampleBrandName,
+                          tagline: guild.sampleTagline,
+                          priceMultiplier: guild.priceMultiplier,
+                        });
+                      }}
+                      className={`w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors ${
+                        isApplied
+                          ? 'bg-[#D4AF37] text-[#2A1A10]'
+                          : 'bg-[#4A2E1B] hover:bg-[#352012] text-[#F6E27A]'
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4 shrink-0" />
+                      <span>
+                        {isApplied
+                          ? '✓ کل برنامه برای این صنف شخصی‌سازی شد (در هدر و فاکتور ببینید)'
+                          : '⚡ شخصی‌سازی ۱-کلیکی کل برنامه برای این صنف (تست زنده ویزیتور)'}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* SUB-TAB 3: 25% GUARANTEED VISITOR INCOME MECHANISM & CALCULATOR */}
         {activeSubTab === 'visitor25' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -541,9 +684,192 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
           </div>
         )}
 
-        {/* SUB-TAB 3: ARCHITECTURAL CRITIQUE & CREATIVE INNOVATION PROPOSALS */}
+        {/* SUB-TAB 4: ARCHITECTURAL CRITIQUE & CREATIVE INNOVATION PROPOSALS + LIVE 3-ZONE VISUALIZER */}
         {activeSubTab === 'critique' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {/* Creative Feature: Live 3-Zone Kitchen Wood, Stone Slab & Kelvin Lighting Visualizer */}
+            <div className="p-6 rounded-2xl bg-[#FAF7F2] border-2 border-[#D4AF37] space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E6DEC8] pb-3">
+                <div>
+                  <span className="text-xs font-bold text-emerald-700">
+                    ✨ پیشنهاد خلاقانه پیاده‌سازی‌شده (Live Architectural Material Studio)
+                  </span>
+                  <h3 className="text-lg font-extrabold text-[#4A2E1B]">
+                    🎨 شبیه‌ساز زنده هارمونی رنگ کابینت هوایی، سنگ اسلب بین‌کابینتی، چوب جزیره و دمای نورپردازی
+                  </h3>
+                </div>
+                <span className="text-xs font-mono-tabular bg-white px-3 py-1.5 rounded-lg border border-[#E6DEC8] text-[#4A2E1B] font-bold">
+                  نور فعال: {ledKelvin} CRI 95+
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                {/* Controls */}
+                <div className="lg:col-span-6 space-y-4 text-xs">
+                  <div>
+                    <div className="font-bold text-[#4A2E1B] mb-1.5">۱. انتخاب رنگ کابینت هوایی (Upper Cabinets):</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { name: 'سفید صدفی مات انزو (#FAF7F2)', hex: '#FAF7F2', textHex: '#4A2E1B' },
+                        { name: 'کرم کاپوچینو نئوکلاسیک (#EFE6D5)', hex: '#EFE6D5', textHex: '#4A2E1B' },
+                        { name: 'سبز مریم‌گلی سلطنتی (#3B5249)', hex: '#3B5249', textHex: '#FAF7F2' },
+                        { name: 'طوسی ابری سوپرمات AGT (#D8DADF)', hex: '#D8DADF', textHex: '#2A1A10' },
+                      ].map((c) => (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          onClick={() => setUpperColor(c)}
+                          className={`p-2.5 rounded-xl border text-right font-bold flex items-center gap-2 cursor-pointer ${
+                            upperColor.hex === c.hex
+                              ? 'border-2 border-[#4A2E1B] bg-white'
+                              : 'border-[#E6DEC8] bg-white/70'
+                          }`}
+                        >
+                          <span
+                            className="w-4 h-4 rounded-full border border-black/20 shrink-0"
+                            style={{ backgroundColor: c.hex }}
+                          />
+                          <span>{c.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-bold text-[#4A2E1B] mb-1.5">۲. انتخاب سنگ صفحه و بین‌کابینتی (Countertop & Slab):</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {[
+                        {
+                          name: 'مرمر کلکته رگه‌طلایی (Calacatta Gold)',
+                          bg: 'linear-gradient(135deg, #FFFFFF 0%, #F4EFE6 45%, #D4AF37 50%, #FAF7F2 100%)',
+                        },
+                        {
+                          name: 'اسلب مارکینا مشکی-طلایی (Black Marquina)',
+                          bg: 'linear-gradient(135deg, #1A1A1A 0%, #2C221E 48%, #D4AF37 51%, #141414 100%)',
+                        },
+                      ].map((s) => (
+                        <button
+                          key={s.name}
+                          type="button"
+                          onClick={() => setSlabStyle(s)}
+                          className={`p-2.5 rounded-xl border text-right font-bold cursor-pointer ${
+                            slabStyle.name === s.name
+                              ? 'border-2 border-[#4A2E1B] bg-white'
+                              : 'border-[#E6DEC8] bg-white/70'
+                          }`}
+                        >
+                          {s.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <div className="font-bold text-[#4A2E1B] mb-1.5">۳. چوب کابینت زمینی و جزیره:</div>
+                      <div className="flex gap-2">
+                        {[
+                          { name: 'گردو آمریکایی', hex: '#4A2E1B' },
+                          { name: 'بلوط گرم', hex: '#7C5333' },
+                          { name: 'مشکی سوپرمات', hex: '#22201E' },
+                        ].map((bw) => (
+                          <button
+                            key={bw.hex}
+                            type="button"
+                            onClick={() => setBaseWood(bw)}
+                            className={`flex-1 py-2 px-2 rounded-lg border font-bold cursor-pointer ${
+                              baseWood.hex === bw.hex
+                                ? 'bg-[#4A2E1B] text-[#F6E27A] border-[#D4AF37]'
+                                : 'bg-white text-[#4A2E1B] border-[#E6DEC8]'
+                            }`}
+                          >
+                            {bw.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-bold text-[#4A2E1B] mb-1.5">۴. دمای لاین نوری زیر کابینت:</div>
+                      <div className="flex gap-1.5">
+                        {(['3000K', '4000K', '6000K'] as const).map((k) => (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => setLedKelvin(k)}
+                            className={`flex-1 py-2 rounded-lg border font-mono-tabular font-bold cursor-pointer ${
+                              ledKelvin === k
+                                ? 'bg-amber-500 text-black border-amber-600'
+                                : 'bg-white text-[#4A2E1B] border-[#E6DEC8]'
+                            }`}
+                          >
+                            {k}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Architectural Elevation Render */}
+                <div className="lg:col-span-6 rounded-2xl overflow-hidden border-2 border-[#4A2E1B] shadow-md bg-white">
+                  {/* Upper Cabinets (40% Union) */}
+                  <div
+                    className="h-24 px-4 flex items-center justify-between border-b-2 border-[#D4AF37]"
+                    style={{ backgroundColor: upperColor.hex, color: upperColor.textHex }}
+                  >
+                    <span className="text-xs font-extrabold">کابینت هوایی (۴۰٪ اتحادیه): {upperColor.name}</span>
+                    <span className="text-[11px] font-mono-tabular opacity-80">Blum Soft-Close</span>
+                  </div>
+
+                  {/* Under-Cabinet LED Line Glow */}
+                  <div
+                    className="h-2.5 w-full transition-all"
+                    style={{
+                      background:
+                        ledKelvin === '3000K'
+                          ? 'linear-gradient(90deg, #F59E0B, #FDE68A, #F59E0B)'
+                          : ledKelvin === '4000K'
+                          ? 'linear-gradient(90deg, #FEF3C7, #FFFFFF, #FEF3C7)'
+                          : 'linear-gradient(90deg, #BAE6FD, #F0F9FF, #BAE6FD)',
+                    }}
+                  />
+
+                  {/* Backsplash & 5cm Slab Countertop */}
+                  <div
+                    className="h-20 px-4 flex items-center justify-between border-b-4 border-[#D4AF37]"
+                    style={{ background: slabStyle.bg }}
+                  >
+                    <span className="px-2.5 py-1 rounded-md bg-black/65 text-[#F6E27A] text-xs font-bold">
+                      بین‌کابینتی و صفحه ۵ سانتی: {slabStyle.name}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-black/65 text-white text-[11px] font-mono-tabular">
+                      LED {ledKelvin}
+                    </span>
+                  </div>
+
+                  {/* Base Cabinets & Walnut Island (60% Union) */}
+                  <div
+                    className="h-28 px-4 flex items-center justify-between text-white"
+                    style={{ backgroundColor: baseWood.hex }}
+                  >
+                    <div>
+                      <div className="text-xs font-extrabold text-[#F6E27A]">
+                        کابینت زمینی و جزیره (۶۰٪ اتحادیه): {baseWood.name}
+                      </div>
+                      <div className="text-[11px] text-white/80 mt-0.5">
+                        دستگیره و پاخور طلای ۲۴ عیار (#D4AF37) · برند: {brandConfig.brandName}
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono-tabular px-2.5 py-1 rounded-lg bg-black/30 border border-[#D4AF37]/50 text-[#F6E27A]">
+                      10Y Warranty
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#E6DEC8] space-y-4">
               <h3 className="text-lg font-bold text-[#4A2E1B] flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#D4AF37]" />
@@ -602,6 +928,7 @@ export const WhiteLabelAffiliateSection: React.FC<WhiteLabelAffiliateSectionProp
                   حتی اگر اینترنت به کلی قطع باشد، استوری‌ساز یک طرح معماری چوب گردو و اسلب مرمر با طلای ۲۴ عیار به صورت برداری روی پوستر ۱۰۸۰×۱۹۲۰ ترسیم می‌کند تا هیچ‌گاه عکس شکسته ایجاد نشود.
                 </li>
               </ul>
+            </div>
             </div>
           </div>
         )}

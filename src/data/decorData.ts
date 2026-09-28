@@ -1,5 +1,23 @@
-export type LanguageCode = 'fa' | 'ku' | 'en' | 'ar' | 'tr' | 'ru';
-export type CurrencyCode = 'IRT' | 'USD' | 'IQD' | 'AED' | 'TRY' | 'RUB';
+export type LanguageCode = 'fa' | 'ku' | 'hy' | 'en' | 'ar' | 'tr' | 'ru';
+export type CurrencyCode = 'IRT' | 'USD' | 'IQD' | 'AMD' | 'AED' | 'TRY' | 'RUB';
+export type LocalizedString = {
+  fa: string;
+  ku: string;
+  en: string;
+  ar: string;
+  tr: string;
+  ru: string;
+  hy?: string;
+};
+export type LocalizedStringArray = {
+  fa: string[];
+  ku: string[];
+  en: string[];
+  ar: string[];
+  tr: string[];
+  ru: string[];
+  hy?: string[];
+};
 
 export interface LanguageMeta {
   code: LanguageCode;
@@ -12,6 +30,7 @@ export interface LanguageMeta {
 export const LANGUAGES: LanguageMeta[] = [
   { code: 'fa', label: 'FA فارسی', flag: '🇮🇷', dir: 'rtl', speechLang: 'fa-IR' },
   { code: 'ku', label: 'KU کوردی', flag: '☀️', dir: 'rtl', speechLang: 'fa-IR' },
+  { code: 'hy', label: 'HY Հայերեն', flag: '🇦🇲', dir: 'ltr', speechLang: 'hy-AM' },
   { code: 'ar', label: 'AR العربية', flag: '🇦🇪', dir: 'rtl', speechLang: 'ar-AE' },
   { code: 'en', label: 'EN English', flag: '🌍', dir: 'ltr', speechLang: 'en-US' },
   { code: 'tr', label: 'TR Türkçe', flag: '🇹🇷', dir: 'ltr', speechLang: 'tr-TR' },
@@ -23,6 +42,7 @@ export interface SuggestedBrandName {
   persianName: string;
   englishName: string;
   kurdishName: string;
+  armenianName: string;
   fullDisplay: string;
   meaning: string;
 }
@@ -33,6 +53,7 @@ export const SUGGESTED_APP_NAMES: SuggestedBrandName[] = [
     persianName: 'دکورمِیت VIP (همیار هوشمند دکوراسیون)',
     englishName: 'DecorMate VIP',
     kurdishName: 'دیکۆرمەیت VIP',
+    armenianName: 'ԴեկորՄեյթ VIP (DecorMate)',
     fullDisplay: 'DecorMate VIP | دکورمِیت',
     meaning: 'نام بین‌المللی، مدرن و به‌یادماندنی (ترکیب Decor + Mate به معنای همکار و مشاور هوشمند دکوراسیون)',
   },
@@ -41,6 +62,7 @@ export const SUGGESTED_APP_NAMES: SuggestedBrandName[] = [
     persianName: 'زرین‌چوب سلطنتی',
     englishName: 'ZarrinWood Royal',
     kurdishName: 'زێڕین دار (Zêrîn Dar)',
+    armenianName: 'ԶարինՎուդ Ռոյալ (Ոսկե Փայտ)',
     fullDisplay: 'ZarrinWood Royal | زرین‌چوب',
     meaning: 'اصیل فارسی و هماهنگ با تم «چوب گردو و طلای ۲۴ عیار»؛ عالی برای نمایشگاه‌های کابینت کلاسیک و نئوکلاسیک',
   },
@@ -49,22 +71,25 @@ export const SUGGESTED_APP_NAMES: SuggestedBrandName[] = [
     persianName: 'چوبینه پلاس (معمار چوب و کابینت)',
     englishName: 'Choubineh Architect Pro',
     kurdishName: 'چۆبینە پڵەس',
+    armenianName: 'Չուբինեհ Պրո (Ճարտարապետ)',
     fullDisplay: 'Choubineh Pro | چوبینه پلاس',
     meaning: 'نام اصیل ایرانی با حس مهندسی، نجاری مدرن و بازسازی لوکس ساختمان',
   },
   {
     id: 'zagroswood',
-    persianName: 'زاگرس دکور (ویژه ایران و اقلیم کردستان)',
-    englishName: 'Zagros Decor & Cabinet VIP',
+    persianName: 'زاگرس دکور (ویژه ایران، اقلیم کردستان و ارمنستان)',
+    englishName: 'Zagros & Ararat Decor VIP',
     kurdishName: 'زاگرۆس دیکۆر (Zagros Decor)',
+    armenianName: 'Արարատ և Զագրոս Դեկոր VIP',
     fullDisplay: 'Zagros Decor VIP | زاگرس دکور',
-    meaning: 'بهترین انتخاب برای بازار غرب کشور، سنندج، مهاباد، کرمانشاه، اربیل و سلیمانیه (ایران و عراق)',
+    meaning: 'بهترین انتخاب برای بازار ایران، سنندج، اربیل، سلیمانیه و صادرات به ایروان ارمنستان',
   },
   {
     id: 'kakhdecor',
     persianName: 'کاخ‌دکور (عمارت چوب و سنگ)',
     englishName: 'PalaceDecor Luxury Studio',
     kurdishName: 'کۆشک دیکۆر (Koşk Decor)',
+    armenianName: 'Պալاس Դեկոր Լյուքս Ստուդիա',
     fullDisplay: 'PalaceDecor VIP | کاخ‌دکور',
     meaning: 'مناسب کلینیک‌های ساختمانی لوکس، پنت‌هاوس‌سازان و مجریان کابینت انزو و تمام چوب',
   },
@@ -82,6 +107,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyMeta> = {
   IRT: { code: 'IRT', label: 'تومان (IRT)', symbol: 'تومان', rateFromToman: 1 },
   USD: { code: 'USD', label: 'USD $', symbol: '$', rateFromToman: 1 / 85000 },
   IQD: { code: 'IQD', label: 'IQD دینار', symbol: 'د.ع', rateFromToman: 1310 / 85000 },
+  AMD: { code: 'AMD', label: 'AMD ֏ درام', symbol: '֏', rateFromToman: 388 / 85000 },
   AED: { code: 'AED', label: 'AED درهم', symbol: 'AED', rateFromToman: 3.67 / 85000 },
   TRY: { code: 'TRY', label: 'TRY لیر', symbol: '₺', rateFromToman: 36.5 / 85000 },
   RUB: { code: 'RUB', label: 'RUB روبل', symbol: '₽', rateFromToman: 92.0 / 85000 },
@@ -90,7 +116,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyMeta> = {
 export function convertFromToman(amountToman: number, currency: CurrencyCode): number {
   const rate = CURRENCIES[currency].rateFromToman;
   const raw = amountToman * rate;
-  if (currency === 'IRT' || currency === 'IQD') return Math.round(raw);
+  if (currency === 'IRT' || currency === 'IQD' || currency === 'AMD') return Math.round(raw);
   return Math.round(raw * 10) / 10;
 }
 
@@ -99,6 +125,8 @@ export function formatPrice(amountToman: number, currency: CurrencyCode, lang: L
   const locale =
     lang === 'fa' || lang === 'ku'
       ? 'fa-IR'
+      : lang === 'hy'
+      ? 'hy-AM'
       : lang === 'ar'
       ? 'ar-AE'
       : lang === 'tr'
@@ -117,6 +145,9 @@ export function formatPrice(amountToman: number, currency: CurrencyCode, lang: L
   if (currency === 'IQD') {
     return `${formattedNumber} ${lang === 'fa' || lang === 'ku' || lang === 'ar' ? 'دینار' : 'IQD'}`;
   }
+  if (currency === 'AMD') {
+    return `${formattedNumber} ֏`;
+  }
   if (currency === 'USD') {
     return `$${formattedNumber}`;
   }
@@ -132,9 +163,9 @@ export function formatPrice(amountToman: number, currency: CurrencyCode, lang: L
 export interface ProjectTypeOption {
   id: string;
   unionBaseRatio: number;
-  unionFormulaNote: Record<LanguageCode, string>;
-  names: Record<LanguageCode, string>;
-  unitLabel: Record<LanguageCode, string>;
+  unionFormulaNote: LocalizedString;
+  names: LocalizedString;
+  unitLabel: LocalizedString;
 }
 
 export const PROJECT_TYPES: ProjectTypeOption[] = [
@@ -144,6 +175,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'کابینت آشپزخانه (فرمول ۶۰٪ زمینی + ۴۰٪ هوایی اتحادیه)',
       ku: 'کابینەی چێشتخانە (فۆرمۆلی فەرمی ٦٠٪ زەوی + ٤٠٪ دیواری)',
+      hy: 'Խոհանոցի կահույք (Պաշտոնական բանաձև 60% ստորին + 40% վերին)',
       en: 'Kitchen Cabinet (Union 60% Base + 40% Wall Formula)',
       ar: 'خزائن المطبخ (معادلة الاتحاد 60٪ سفلي + 40٪ علوي)',
       tr: 'Mutfak Dolabı (%60 Alt + %40 Üst Standart Formül)',
@@ -152,6 +184,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر طول',
       ku: 'مەتری درێژی',
+      hy: 'Գծային մետր',
       en: 'Linear Meter',
       ar: 'متر طولي',
       tr: 'Metretül',
@@ -160,6 +193,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: '۶۰٪ کابینت زمینی (عمق ۶۰) + ۴۰٪ کابینت هوایی (ارتفاع ۹۰) + صفحه شرکتی ۵ سانتی ضدآب + لولا آرام‌بند بلوم اتریش',
       ku: '٦٠٪ کابینەی خوارەوە (قووڵی ٦٠) + ٤٠٪ کابینەی سەرەوە + سەفحەی ٥ سانتی دژەئاو + یەراقی بلومی نەمسا',
+      hy: '60% ստորին պահարան + 40% վերին պահարան + 5սմ ջրակայուն երեսպատում + Blum Ավստրիա ծխնիներ',
       en: '60% Base Cabinet (60cm depth) + 40% Wall Cabinet (90cm height) + 5cm Waterproof Countertop + Blum Austria Soft-Close Hardware',
       ar: '60٪ خزانة سفلية + 40٪ خزانة علوية + سطح 5 سم مقاوم للماء + مفصلات بلوم النمساوية',
       tr: '%60 Alt Dolap + %40 Üst Dolap + 5cm Su Geçirmez Tezgah + Blum Avusturya Frenli Menteşe',
@@ -172,6 +206,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'کمد دیواری ریلی / باکسی مدرن (مترمربع چهارچوب و بدنه)',
       ku: 'کانتۆر و کۆمێدی دیواری سکەدار / بۆکسی مۆدێرن',
+      hy: 'Սահող / Ներկառուցված զգեստապահարան (Ամբողջական կորպուս)',
       en: 'Sliding / Box Wardrobe (Full Frame & Internal Box)',
       ar: 'خزانة حائط سحاب / بوكس حديثة',
       tr: 'Sürgülü / Gövdeli Gardırop Sistemi',
@@ -180,6 +215,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر مربع',
       ku: 'مەتر چوارگۆشە',
+      hy: 'Քառ. մետր',
       en: 'Sq. Meter',
       ar: 'متر مربع',
       tr: 'Metrekare',
@@ -188,6 +224,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: 'بدنه کامل ملامینه پویا گرید A + ریل سنگین آلومینیوم طلایی ۸۰ کیلویی + کشوهای مخفی با ریل تاندم بلوم',
       ku: 'بدنەی تەواو مێلامینەی پلە یەک + سکەی ئەلەمنیۆمی زێڕین ٨٠ کیلۆیی + چەکمەجەی شاراوەی بلوم',
+      hy: 'Ամբողջական կորպուս + 80կգ ոսկեգույն ալյումինե ռելսեր + Blum թաքնված դարակներ',
       en: 'Full Grade-A Body + 80kg Heavy-Duty Brushed Gold Aluminum Track + Blum Tandem Hidden Drawers',
       ar: 'هيكل كامل درجة أولى + سكة ألمنيوم ذهبية تتحمل 80 كجم + أدراج مخفية بلوم',
       tr: 'Tam Gövde + 80kg Kapasiteli Altın Alüminyum Ray + Blum Gizli Çekmece',
@@ -200,6 +237,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'کلوزت‌روم اشرافی (Walk-in Closet) + جزیره جواهرات و اکسسوری',
       ku: 'ژووری جلوبەرگی شاهانە (Walk-in Closet) + دوورگەی خشڵ و کاتژمێر',
+      hy: 'Լյուքս հանդերձարան (Walk-in Closet) + Զարդերի կղզյակ',
       en: 'Luxury Walk-in Closet + Jewelry Island & LED Shelves',
       ar: 'غرفة ملابس فاخرة (Walk-in Closet) مع جزيرة إكسسوارات',
       tr: 'Lüks Giyinme Odası (Walk-in Closet) + Aksesuar Adası',
@@ -208,6 +246,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر مربع',
       ku: 'مەتر چوارگۆشە',
+      hy: 'Քառ. մետր',
       en: 'Sq. Meter',
       ar: 'متر مربع',
       tr: 'Metrekare',
@@ -216,6 +255,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: 'شامل درب‌های شیشه‌ای فریم شامپاینی، لاین نوری سنسوردار ۳۰۰۰ کلوین، رگال آسانسوری و کشوی مخمل جواهرات',
       ku: 'دەرگای شووشەیی چوارچێوەی شامپاینی + ڕووناکی هەستیار ٣٠٠٠ کلوین + چەکمەجەی مەخمەلی خشڵ',
+      hy: 'Շամպայն ապակե դռներ, 3000K սենսորային LED լուսավորություն և թավշյա զարդերի դարակներ',
       en: 'Includes Champagne Glass Doors, 3000K Sensor LED Lines, Pull-Down Hanger Lift & Velvet Jewelry Dividers',
       ar: 'يشمل أبواب زجاجية بإطار شامبانيا، إضاءة حساسة 3000 كلفن، علاقة ملابس هيدروليكية وأدراج مخملية',
       tr: 'Şampanya Cam Kapaklar, 3000K Sensörlü LED, Asansörlü Askılık ve Kadife Mücevher Çekmecesi Dahil',
@@ -228,6 +268,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'پارکت لمینت AC5 و دیوارکوب ترمووود / چوب گردو (تی‌وی وال)',
       ku: 'پارکێتی لامینێت AC5 و دیوارپۆشی تێرمۆوود و داری گوێز (TV Wall)',
+      hy: 'AC5 Լամինատե մանրահատակ և ընկույզի փայտից TV պատի պանել',
       en: 'AC5 Parquet Laminate & Walnut Acoustic TV Wall Panel',
       ar: 'باركيه لامينت AC5 وتكسيات جدران خشب الجوز',
       tr: 'AC5 Laminat Parke & Ceviz TV Ünitesi Duvar Paneli',
@@ -236,6 +277,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر مربع',
       ku: 'مەتر چوارگۆشە',
+      hy: 'Քառ. մետր',
       en: 'Sq. Meter',
       ar: 'متر مربع',
       tr: 'Metrekare',
@@ -244,6 +286,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: 'شامل فوم سایلنت ۲ میل، قرنیز پی‌وی‌سی مغزدار ۹ سانتی، زیرسازی کامل و نصب تخصصی با ضمانت ۱۰ ساله',
       ku: 'فۆمی بێدەنگ ٢ میل + قەرنیزی ٩ سانتی + ژێرسازی تەواو و بەستنی پسپۆڕانە بە گەرەنتی ١٠ ساڵە',
+      hy: 'Ներառում է 2մմ ձայնամեկուսիչ շերտ, 9սմ շրիշակ և 10 տարվա երաշխիքով տեղադրում',
       en: 'Includes 2mm Silent Underlayment, 9cm Core Skirting Board, Subfloor Prep & 10-Year Certified Installation',
       ar: 'يشمل فوم عازل للصوت 2 مم، نعلات 9 سم، تجهيز الأرضية وتركيب احترافي بضمان 10 سنوات',
       tr: '2mm Sessiz Şilte, 9cm Süpürgelik, Zemin Hazırlığı ve 10 Yıl Garantili Profesyonel Montaj',
@@ -256,6 +299,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'کناف ایران (K+)، سقف کاذب دکوراتیو و لاین نوری مگنتی',
       ku: 'سەقفی مەغریبی و کەناف (K+) و هێڵی ڕووناکی موگناتیسی',
+      hy: 'Դեկորատիվ գիպսակարտոնե առաստաղ (Knauf) և մագնիսական LED լուսավորություն',
       en: 'Decorative Drywall Ceiling & Magnetic Linear Lighting',
       ar: 'أسقف جبس بورد ديكورية وإضاءة خطية مغناطيسية',
       tr: 'Dekoratif Alçıpan Tavan & Manyetik Lineer Aydınlatma',
@@ -264,6 +308,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر مربع',
       ku: 'مەتر چوارگۆشە',
+      hy: 'Քառ. մետր',
       en: 'Sq. Meter',
       ar: 'متر مربع',
       tr: 'Metrekare',
@@ -272,6 +317,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: 'سازه‌های گالوانیزه استاندارد ۶۰، پنل RG ضدحریق، بتونه‌کاری درزگیر ماستیک و پروفیل آلومینیوم لاین نوری',
       ku: 'ئاسنی گەلڤانیزەی ستاندارد + پەنێلی دژەئاگر و شێ + ماستیک و پرۆفیلی ئەلەمنیۆمی ڕووناکی',
+      hy: 'Ցինկապատ պրոֆիլներ, հրակայուն պանելներ, մաստիկա և ալյումինե LED պրոֆիլներ',
       en: 'Standard Galvanized Framing, Moisture/Fire Resistant Board, Mastic Joint Finishing & Aluminum LED Profiles',
       ar: 'هياكل مجلفنة قياسية، ألواح مقاومة للرطوبة والحريق، معجون ماستيك وبروفايل ألمنيوم للإضاءة',
       tr: 'Standart Galvaniz Profil, Suya/Yangına Dayanıklı Panel, Mastik Dolgu ve Alüminyum LED Profil',
@@ -284,6 +330,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     names: {
       fa: 'بازسازی کامل VIP ساختمان (کابینت + کمد + کف + سقف + سنگ اسلب)',
       ku: 'نۆژەنکردنەوەی تەواوی بینا VIP (کابینە + کانتۆر + عەرز + سەقف + مەڕمەڕ)',
+      hy: 'Բնակարանի ամբողջական VIP վերանորոգում (Խոհանոց + Հատակ + Առաստաղ + Մարմար)',
       en: 'Full Turnkey VIP Renovation (Kitchen + Floors + Ceiling + Slab)',
       ar: 'تجديد شامل VIP للمباني (مطبخ + خزائن + أرضيات + أسقف + رخام)',
       tr: 'Anahtar Teslim VIP Tam Tadilat (Mutfak + Zemin + Tavan + Mermer)',
@@ -292,6 +339,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unitLabel: {
       fa: 'متر مربع زیربنا',
       ku: 'مەتر چوارگۆشەی بینا',
+      hy: 'Քառ. մետր տարածք',
       en: 'Sq. Meter Area',
       ar: 'متر مربع مساحة',
       tr: 'Metrekare Alan',
@@ -300,6 +348,7 @@ export const PROJECT_TYPES: ProjectTypeOption[] = [
     unionFormulaNote: {
       fa: 'مدیریت پیمان کامل با برنامه زمان‌بندی دقیق، طراحی 3D Max رایگان، نظارت مهندس معمار و تحویل کلید در ۴۵ روز کاری',
       ku: 'بەڕێوەبردنی تەواوی پڕۆژە + دیزاینی 3D Max بەخۆڕایی + سەرپەرشتی ئەندازیاری تەلارسازی و ڕادەستکردن لە ٤٥ ڕۆژدا',
+      hy: 'Ամբողջական նախագծի կառավարում, անվճար 3D Max դիզայն, ճարտարապետական վերահսկողություն և հանձնում 45 օրում',
       en: 'Full Turnkey Contract Management, Free 3D Max Rendering, Senior Architect Supervision & 45-Day Key Handover',
       ar: 'إدارة عقود متكاملة، تصميم ثلاثي الأبعاد مجاني، إشراف مهندس معماري وتسليم المفتاح خلال 45 يوماً',
       tr: 'Tam Sözleşmeli Proje Yönetimi, Ücretsiz 3D Max Tasarım, Mimar Denetimi ve 45 Günde Anahtar Teslim',
@@ -313,8 +362,8 @@ export interface MaterialOption {
   basePricePerMeterToman: number;
   wholesaleSheetToman: number;
   warrantyYears: number;
-  names: Record<LanguageCode, string>;
-  specs: Record<LanguageCode, string>;
+  names: LocalizedString;
+  specs: LocalizedString;
 }
 
 export const MATERIALS: MaterialOption[] = [
@@ -326,6 +375,7 @@ export const MATERIALS: MaterialOption[] = [
     names: {
       fa: 'هایگلاس ترک AGT اورجینال (براق آینه‌ای / سوپرمات ضدلک)',
       ku: 'هایگڵاسی تورکی AGT ئۆرجیناڵ (بریقەدار / سووپەرماتی دژەپەڵە)',
+      hy: 'Օրիգինալ թուրքական AGT High-Gloss և Սուպեր-Մատ (Հակամատնահետք)',
       en: 'Original Turkish AGT High-Gloss & Soft-Touch Super Matte',
       ar: 'هاي غلوس تركي AGT أصلي (لامع مرآة / سوبر مات مضاد للبصمات)',
       tr: 'Orijinal AGT High-Gloss & Soft-Touch Süper Mat Panel',
@@ -334,6 +384,7 @@ export const MATERIALS: MaterialOption[] = [
     specs: {
       fa: 'مغزی MDF دانسیته بالا، نوار PVC همرنگ با چسب گرانول هنکل آلمان، مقاومت بالا در برابر خط‌وخش',
       ku: 'ناوکی MDF چڕی بەرز، نەواری PVC هاوڕەنگ بە چەسپی هێنکڵی ئەڵمانی، بەرگری بەرز لە دژی شوخت',
+      hy: 'Բարձր խտության MDF, գերմանական Henkel PUR եզրային ժապավեն, քերծվածքներից պաշտպանված',
       en: 'High-Density MDF Core, Henkel German PUR Edge Banding, Anti-Fingerprint & Scratch Resistant',
       ar: 'قلب MDF عالي الكثافة، شريط حواف بغراء هينكل الألماني، مقاوم للخدش والبصمات',
       tr: 'Yüksek Yoğunluklu MDF Gövde, Henkel Alman PUR Kenar Bandı, Çizilmeye ve Parmak İzine Dayanıklı',
@@ -348,6 +399,7 @@ export const MATERIALS: MaterialOption[] = [
     names: {
       fa: 'نئوکلاسیک اشرافی (ابزار ظریف CNC + رنگ پلی‌اورتان ترک / روکش کره‌ای)',
       ku: 'نیۆکلاسیکی شاهانە (نەخشەی ناسکی CNC + بۆیاخی پۆلیئۆریتان / ڕووکەشی کۆری)',
+      hy: 'Թագավորական Նեոկլասիկ (Նուրբ CNC փորագրություն + պոլիուրեթանային ներկ)',
       en: 'Royal Neoclassical (Precision CNC Frame + Turkish Polyurethane)',
       ar: 'نيوكلاسيك ملكي (حفر CNC دقيق + طلاء بولي يوريثان تركي)',
       tr: 'Asil Neoklasik (Hassas CNC Çerçeve + İpek Mat Poliüretan Boya)',
@@ -356,6 +408,7 @@ export const MATERIALS: MaterialOption[] = [
     specs: {
       fa: 'پرفروش‌ترین ترند سال ۱۴۰۵، ستون‌های سرستون منبت ظریف، رنگ پلی‌اورتان ۲ جزئی ضدآب و ضدزردی',
       ku: 'پڕفرۆشترین مۆدێلی ئەمساڵ، بۆیاخی پۆلیئۆریتانی دژەئاو و دژەزەردبوون بە گەرەنتی ٨ ساڵە',
+      hy: 'Տարվա ամենավաճառվող թրենդը, երկբաղադրիչ ջրակայուն պոլիուրեթանային ծածկույթ՝ 8 տարի երաշխիքով',
       en: 'Top Architectural Trend, Slim Shaker Profile, Two-Component Waterproof Non-Yellowing Polyurethane Finish',
       ar: 'الأكثر طلباً هذا العام، إطار شيكر أنيق، طلاء بولي يوريثان مقاوم للماء والاصفرار',
       tr: 'Yılın En Popüler Trendi, İnce Shaker Çerçeve, Sararmayan Çift Bileşenli Su Geçirmez Poliüretan',
@@ -370,6 +423,7 @@ export const MATERIALS: MaterialOption[] = [
     names: {
       fa: 'ممبران کلاسیک سلطنتی (روکش ۱۶ میل کره‌ای + چسب دو جزئی هنکل)',
       ku: 'مێمبرانی کلاسیکی شاهانە (ڕووکەشی ١٦ میلی کۆری + چەسپی هێنکڵی ئەڵمانی)',
+      hy: 'Դասական Թագավորական Մեմբրան (Կորեական վակուումային ծածկույթ + Henkel սոսինձ)',
       en: 'Classic Royal Membrane (Korean Vacuum Foil + Henkel Adhesive)',
       ar: 'ممبران كلاسيك ملكي (روكش كوري 16 مم + غراء هينكل ثنائي)',
       tr: 'Klasik Royal Membran (Kore Vakum Folyo + Henkel Çift Bileşenli Tutkal)',
@@ -378,6 +432,7 @@ export const MATERIALS: MaterialOption[] = [
     specs: {
       fa: 'تاج و زیرچراغ و پاخور منبت‌کاری کلاسیک، پرس وکیوم حرارتی استاندارد، دستگیره‌های سرامیکی طلایی',
       ku: 'تاج و ستوونی هەڵکۆڵراوی کلاسیک، پرێسی ڤاکیومی گەرمی ستاندارد و دەسکی سیرامیکی زێڕین',
+      hy: 'Դասական փորագրված քիվեր, բարձր ճնշման ջերմավակուումային մամլում, ոսկեգույն կերամիկական բռնակներ',
       en: 'Carved Classic Crown Molding & Plinth, High-Pressure Thermal Vacuum Press, Gold Ceramic Handles',
       ar: 'تاج وإضاءة سفلية منحوتة كلاسيكية، كبس حراري عالي الضغط، مقابض سيراميك ذهبية',
       tr: 'Oymalı Klasik Taç ve Işık Bandı, Yüksek Basınçlı Termal Vakum Pres, Altın Seramik Kulplar',
@@ -392,6 +447,7 @@ export const MATERIALS: MaterialOption[] = [
     names: {
       fa: 'پلی‌اورتان انزو ایتالیایی (ورق ۲۵ میل پولیشی آینه‌ای و مات مخملی)',
       ku: 'پۆلیئۆریتانی ئێنزۆی ئیتاڵی (تەختەی ٢٥ میل پۆلیشی ئاوێنەیی و ماتی مەخمەلی)',
+      hy: 'Իտալական Էնզո (Enzo) Պոլիուրեթան (25մմ CNC սալիկ, հայելային փայլ և թավշյա մատ)',
       en: 'Italian Enzo Polyurethane (25mm CNC Slab, Mirror Polish & Velvet Matte)',
       ar: 'إنزو بولي يوريثان إيطالي (ألواح 25 مم مصقولة ومات مخملي)',
       tr: 'İtalyan Enzo Poliüretan (25mm CNC Gövde, Ayna Parlak & Kadife Mat)',
@@ -400,6 +456,7 @@ export const MATERIALS: MaterialOption[] = [
     specs: {
       fa: 'ضخامت درب ۲۵ میلی‌متر، ۴ لایه آستر و رنگ پلی‌اورتان ایتالیایی، بدون هیچ‌گونه درز در لبه‌ها (Seamless)',
       ku: 'ئەستووری دەرگا ٢٥ میلیمەتر، ٤ چین بۆیاخی ئیتاڵی، بەتەواوی بێ درز و دژەئاو لە لێوارەکاندا',
+      hy: '25մմ դռան հաստություն, 4 շերտ իտալական պոլիուրեթանային ներկ, 100% անկար և խոնավադիմացկուն եզրեր',
       en: '25mm Door Thickness, 4-Coat Italian Polyurethane Paint, 100% Seamless Moisture-Proof Edges',
       ar: 'سماكة الباب 25 مم، 4 طبقات طلاء إيطالي، حواف بدون فواصل نهائياً مقاومة للرطوبة 100٪',
       tr: '25mm Kapak Kalınlığı, 4 Kat İtalyan Poliüretan Boya, %100 Eksiz Neme Dayanıklı Kenarlar',
@@ -414,6 +471,7 @@ export const MATERIALS: MaterialOption[] = [
     names: {
       fa: 'تمام چوب طبیعی گردو آمریکایی و بلوط گرم + طلای ۲۴ عیار (VIP Custom)',
       ku: 'تەواو داری سروشتی گوێزی ئەمریکی و بەڕوو + زێڕی ٢٤ عەیار (VIP Custom)',
+      hy: 'Բնական ամերիկյան ընկույզի և կաղնու փայտ + 24K ոսկեգույն դետալներ (VIP Custom)',
       en: 'Solid American Walnut & Warm Oak Wood + 24K Gold Brass Inlay',
       ar: 'خشب الجوز الأمريكي الطبيعي والبلوط الدافئ + تطعيم ذهب عيار 24',
       tr: 'Masif Amerikan Ceviz & Sıcak Meşe Ağacı + 24 Ayar Altın Pirinç Detay',
@@ -422,6 +480,7 @@ export const MATERIALS: MaterialOption[] = [
     specs: {
       fa: 'کلاف چوب طبیعی خشک‌کن رفته، روغن گیاهی ازمو آلمان (Osmo)، یراق‌آلات برقی Servo-Drive بلوم اتریش',
       ku: 'داری سروشتی وشککراوەی کوورە، ڕۆنی گیایی Osmo ی ئەڵمانی و یەراقی کارەبایی Servo-Drive ی بلوم',
+      hy: 'Չորացված բնական փայտ, գերմանական Osmo բնական յուղ, Blum Servo-Drive էլեկտրական մեխանիզմներ',
       en: 'Kiln-Dried Solid Timber Frame, German Osmo Natural Wood Oil, Blum Austria Servo-Drive Electric Hardware',
       ar: 'إطار خشب طبيعي مجفف بالأفران، زيت أوزمو الألماني الطبيعي، مفصلات كهربائية بلوم النمساوية',
       tr: 'Fırınlanmış Masif Ahşap Çerçeve, Alman Osmo Doğal Ahşap Yağı, Blum Servo-Drive Elektrikli Donanım',
@@ -439,9 +498,9 @@ export interface ShowcaseProduct {
   wholesaleColleaguePriceToman: number;
   deliveryDays: number;
   warrantyYears: number;
-  title: Record<LanguageCode, string>;
-  subtitle: Record<LanguageCode, string>;
-  materialsUsed: Record<LanguageCode, string>;
+  title: LocalizedString;
+  subtitle: LocalizedString;
+  materialsUsed: LocalizedString;
 }
 
 export const SHOWCASE_PRODUCTS: ShowcaseProduct[] = [
@@ -791,9 +850,9 @@ export interface VIPTier {
   level: number;
   badge: string;
   priceMonthlyToman: number;
-  title: Record<LanguageCode, string>;
-  targetAudience: Record<LanguageCode, string>;
-  features: Record<LanguageCode, string[]>;
+  title: LocalizedString;
+  targetAudience: LocalizedString;
+  features: LocalizedStringArray;
 }
 
 export const VIP_TIERS: VIPTier[] = [
@@ -1344,4 +1403,138 @@ export const UI_STRINGS: Record<LanguageCode, {
     makeStoryBtn: '📸 Скачать HD Сторис с вашим брендом',
     orderWhatsappBtn: 'Заказать в WhatsApp',
   },
+  hy: {
+    subtitleEcosystem: 'Արարման Էկոհամակարգ | Նոր ՆեոՄետավերՍիթի Համաշխարհային Քաղաք | FBNM Հզորություն',
+    hookBannerBadge: 'Ակնթարթային հաշվարկ 10 վայրկյանում — Պաշտոնական ճարտարապետական բանաձև',
+    hookBannerTitle: 'Հաշվարկեք խոհանոցի կահույքի, պահարանների և վերանորոգման ճշգրիտ արժեքը 10 վայրկյանում:',
+    hookBannerCTA: '📐 Խոհանոցի կահույքի և պահարանների արժեքի 10-վայրկյանանոց հաշվիչ + Ապառիկ պլան',
+    accessibilityBtn: '♿ Հասանելիություն և ADHD Կենտրոնացում',
+    adhdModeTitle: '🧠 ADHD Կենտրոնացման Ռեժիմ (Հանգիստ քայլ առ քայլ տեսք)',
+    adhdModeDesc: 'Թաքցնում է ավելորդ անիմացիաները և ցուցադրում քայլ առ քայլ հաշվարկը կանաչ նշումներով',
+    ttsTitle: '🔊 Գների և նախահաշվի ձայնային ընթերցում (TTS)',
+    ttsDesc: 'Ձայնային ընթերցում տեսողության խնդիրներ ունեցող օգտատերերի համար',
+    fontSizeTitle: '🔍 Տառաչափի մեծացում և մեծ կոճակներ (48px+)',
+    highContrastTitle: '🌓 Բարձր կոնտրաստի ռեժիմ (High-Contrast)',
+    navCalculator: 'Մետրաժի և Ապառիկի Հաշվիչ',
+    navShowcase: '10 Լյուքս Նմուշներ և Story Ստեղծող',
+    navDashboard: 'Բիզնես Վերլուծություն (BI)',
+    navAiArchitect: 'AI Ճարտարապետ',
+    btnInstallPWA: '📲 1-Կլիկով Տեղադրել Հավելվածը (iOS / Android)',
+    btnGithubApk: '🤖 GitHub Ավտո-Ռելիզ և APK/AAB Կառուցում',
+    btnVipPlans: '👑 VIP Փաթեթներ (Մակարդակ 1–5)',
+    btnAffiliate: '🤝 25% Միջնորդավճար և White-Label',
+    calcHeading: '📐 Կահույքի, Պահարանների և Վերանորոգման Մետրաժի և Նախահաշվի Հաշվիչ',
+    calcSubheading: 'Ճշգրիտ հաշվարկ պաշտոնական գործակիցներով (60% ստորին + 40% վերին պահարան + 5սմ երեսպատում + Blum Ավստրիա) և 1–6 ամիս ապառիկ',
+    projectTypeLabel: '1. Ընտրեք նախագծի կամ վերանորոգման տեսակը.',
+    materialTypeLabel: '2. Ընտրեք փայտի, MDF-ի և երեսպատման տեսակը.',
+    lengthLabel: '3. Նախագծի երկարությունը կամ մակերեսը (մետր).',
+    heightLabel: '4. Առաստաղի բարձրությունը (սմ).',
+    checkMonthsLabel: '5. Ապառիկ վճարման ամիսների քանակը (1-ից 6 ամիս).',
+    unionBreakdownTitle: 'Ճարտարապետական և ինժեներական արժեքի բաշխում.',
+    cashPriceLabel: 'Ընդհանուր կանխիկ արժեքը (ներառյալ 5% զեղչ).',
+    downPaymentLabel: 'Պայմանագրի կանխավճար (40%).',
+    monthlyCheckLabel: 'Ամսական վճարման գումարը.',
+    sendWhatsappBtn: 'Ուղարկել նախահաշիվը WhatsApp-ով',
+    readInvoiceVoiceBtn: '🔊 Ձայնային ընթերցել նախահաշիվը',
+    showcaseHeading: '🏛️ 10 Իրական Լյուքս Աշխատանքներ + Մեծածախ Գներ և 1-Կլիկ Story Ստեղծող',
+    showcaseSubheading: 'Մանրածախ և մեծածախ MDF/Blum գների համեմատություն + 1080×1920 HD Instagram Story պաստառի ստեղծում',
+    retailPricePerMeter: 'Կատարման գինը (1 մետր).',
+    colleagueWholesalePrice: 'Գործընկերոջ մեծածախ գին (MDF և ֆուրնիտուրա).',
+    makeStoryBtn: '📸 Ստեղծել HD Story Ձեր Բրենդով',
+    orderWhatsappBtn: 'Պատվիրել WhatsApp-ով',
+  },
 };
+
+export interface RelatedGuildItem {
+  id: string;
+  guildTitle: string;
+  whyMustBuy: string;
+  visitorPitchTip: string;
+  sampleBrandName: string;
+  sampleTagline: string;
+  priceMultiplier: number;
+}
+
+export const RELATED_GUILDS_DATA: RelatedGuildItem[] = [
+  {
+    id: 'cabinet-workshop',
+    guildTitle: '۱. کارگاه‌ها و نمایشگاه‌های کابینت آشپزخانه و کمد دیواری',
+    whyMustBuy:
+      'جلوگیری از فرار مشتری به خاطر قیمت‌های مبهم؛ صدور پیش‌فاکتور رسمی ۶۰/۴۰ اتحادیه و اقساط چک صیادی در ۱۰ ثانیه جلوی چشم مشتری.',
+    visitorPitchTip: 'اسم کارگاهشان را بزنید و دکمه پیش‌فاکتور چک صیادی را نشان دهید؛ درجا خرید می‌کنند!',
+    sampleBrandName: 'صنایع چوب و کابینت شاهکار | Shahkar Cabinet VIP',
+    sampleTagline: 'مجری تخصصی کابینت نئوکلاسیک، انزو و چوب گردو با ضمانت ۱۰ ساله اتحادیه',
+    priceMultiplier: 1.0,
+  },
+  {
+    id: 'mdf-hardware-shop',
+    guildTitle: '۲. مغازه‌داران یراق‌آلات، ورق MDF، هایگلاس و صفحه کابینت',
+    whyMustBuy:
+      'ارائه لیست قیمت روز عمده همکار + محاسبه خودکار تعداد ورق MDF و تعداد لولا بلوم مورد نیاز هر پروژه برای نصابان و مشتریان.',
+    visitorPitchTip: 'بخش «برآوردگر تعداد ورق MDF و لولا بلوم» و دکمه «قیمت عمده همکار» را به مغازه‌دار نشان دهید.',
+    sampleBrandName: 'پخش ورق و یراق‌آلات مرکزی | Blum & AGT Center',
+    sampleTagline: 'نمایندگی رسمی ورق‌های هایگلاس AGT ترک و یراق‌آلات اورجینال بلوم اتریش',
+    priceMultiplier: 0.9,
+  },
+  {
+    id: 'parquet-wallpaper',
+    guildTitle: '۳. فروشگاه‌های پارکت لمینت، کاغذدیواری، ترمووود و ماربل‌شیت',
+    whyMustBuy:
+      'محاسبه آنی متراژ کف و دیوار به همراه فوم سایلنت و قرنیز + ساخت استوری‌های ۱۰۸۰×۱۹۲۰ اینستاگرامی با نام فروشگاه در ۱ کلیک.',
+    visitorPitchTip: 'در ماشین‌حساب گزینه «پارکت لمینت AC5 و دیوارکوب ترمووود» را انتخاب و استوری‌ساز را اجرا کنید.',
+    sampleBrandName: 'گالری پارکت و دکوراسیون آرتا | Arta Floor & Wall',
+    sampleTagline: 'مرکز تخصصی پارکت لمینت AC5، دیوارپوش ترمووود و تی‌وی وال مدرن',
+    priceMultiplier: 0.95,
+  },
+  {
+    id: 'stone-slab-quartz',
+    guildTitle: '۴. نمایشگاه‌های سنگ اسلب، کوارتز، کورین و سرامیک پرسلان',
+    whyMustBuy:
+      'ست کردن هوشمند رنگ سنگ کلکته و کوارتز با چوب گردو و کابینت برای معماران و سازندگان ساختمان + پیش‌فاکتور ۷ ارزی.',
+    visitorPitchTip: 'بخش «معمار هوشمند ست‌کننده رنگ چوب و سنگ اسلب» را به صاحب نمایشگاه سنگ نشان دهید.',
+    sampleBrandName: 'عمارت سنگ اسلب و کوارتز رویال | Royal Slab & Quartz',
+    sampleTagline: 'تولید و اجرای تخصصی صفحات کوارتز، کورین و اسلب مرمر کلکته طلایی',
+    priceMultiplier: 1.15,
+  },
+  {
+    id: 'drywall-lighting',
+    guildTitle: '۵. مجریان کناف (K+)، سقف کاذب، لاین نوری و برق ساختمان',
+    whyMustBuy:
+      'تبدیل استعلام‌های تلفنی به قرارداد قطعی با محاسبه دقیق مترمربع کناف، پنل ضدحریق و لاین نوری مگنتی ۳۰۰۰ کلوین.',
+    visitorPitchTip: 'ردیف «کناف ایران و لاین نوری مگنتی» را در ماشین‌حساب به آن‌ها نشان دهید.',
+    sampleBrandName: 'مهندسی کناف و نورپردازی مدرن | Modern Knauf & LED',
+    sampleTagline: 'اجرای تخصصی سقف کاذب دکوراتیو، لاین نوری مخفی و نورپردازی هوشمند',
+    priceMultiplier: 1.0,
+  },
+  {
+    id: 'renovation-architects',
+    guildTitle: '۶. دفاتر مهندسی معماری، پیمانکاران بازسازی و انبوه‌سازان',
+    whyMustBuy:
+      'ارائه پرستیژ بین‌المللی با کاتالوگ ۷ زبانه (فارسی، کوردی، ارمنی، عربی، انگلیسی، ترکی، روسی) و داشبورد هوش تجاری BI.',
+    visitorPitchTip: 'این صنف بهترین خریدار پکیج‌های سطح ۳ تا ۵ (White-Label کامل) با بالاترین پورسانت ۲۵٪ برای ویزیتور است!',
+    sampleBrandName: 'هلدینگ معماری و بازسازی عمارت | Emarat Architecture VIP',
+    sampleTagline: 'طراحی سه‌بعدی و بازسازی کامل VIP ساختمان با مدیریت پیمان ۴۵ روزه',
+    priceMultiplier: 1.2,
+  },
+  {
+    id: 'kitchen-appliances',
+    guildTitle: '۷. فروشگاه‌های هود، سینک، گاز صفحه‌ای، شیرآلات طلایی و فر توکار',
+    whyMustBuy:
+      'هر خریدار کابینت همزمان خریدار سینک، هود و شیرآلات است؛ این اپ مشتریان در حال بازسازی را مستقیماً به واتساپ فروشگاه وصل می‌کند.',
+    visitorPitchTip: 'به فروشنده بگویید با داشتن این اپ، قبل از رقبا به مشتریانی که در حال متراژگیری آشپزخانه هستند می‌رسد.',
+    sampleBrandName: 'کلینیک تجهیزات آشپزخانه و شیرآلات طلایی | Gold Kitchen Hub',
+    sampleTagline: 'بورس سینک‌های گرانیتی، شیرآلات طلایی مات و تجهیزات توکار آشپزخانه لوکس',
+    priceMultiplier: 1.0,
+  },
+  {
+    id: 'furniture-wood',
+    guildTitle: '۸. نمایشگاه‌های مبلمان، سرویس چوب، درب ضدسرقت و کلوزت‌روم',
+    whyMustBuy:
+      'محاسبه فوری قیمت کلوزت‌روم اشرافی و کمد ریلی + ساخت روزانه ده‌ها پوستر استوری استاندارد با کادر طلایی و شماره گالری.',
+    visitorPitchTip: 'بخش «کلوزت‌روم اشرافی + جزیره جواهرات» را با نام گالری مبل آن‌ها شخصی‌سازی کنید.',
+    sampleBrandName: 'گالری مبلمان و کلوزت‌روم ولیعصر | Valiasr Wood & Closet',
+    sampleTagline: 'طراح و تولیدکننده کلوزت‌روم، سرویس چوب گردو و درب‌های تمام چوب',
+    priceMultiplier: 1.1,
+  },
+];
+
