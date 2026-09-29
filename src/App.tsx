@@ -49,6 +49,13 @@ import {
   TenantExtendedConfig,
 } from './components/VipCommercialEnterpriseSuite';
 import {
+  SecretVisitorControlBar,
+  DedicatedGuildPortal,
+  ActiveGuildId,
+  downloadGoldFoilInvoicePng,
+} from './components/MultiGuildDedicatedPortal';
+import { TavanaAmbassadorAcademySimulator } from './components/TavanaAmbassadorAcademySimulator';
+import {
   GithubPushModal,
   VipSubscriptionModal,
   AffiliateWhiteLabelModal,
@@ -92,6 +99,54 @@ export default function App() {
 
   // ADHD Step-by-Step Wizard Tracker
   const [adhdStep, setAdhdStep] = useState<1 | 2 | 3>(1);
+
+  // Multi-Guild Chameleon & Secret Visitor Lock State
+  const [activeGuild, setActiveGuild] = useState<ActiveGuildId>(() => {
+    if (typeof window !== 'undefined') {
+      const g = new URLSearchParams(window.location.search).get('guild') as ActiveGuildId;
+      if (
+        g &&
+        [
+          'cabinet_decor',
+          'ceramics_luxury',
+          'beauty_salon',
+          'auto_barter',
+          'dental_aesthetic',
+          'gold_jewelry',
+          'wedding_venue',
+        ].includes(g)
+      ) {
+        return g;
+      }
+    }
+    return 'cabinet_decor';
+  });
+
+  // Visitor Secret Lock: When false (Client Clean View), other guilds & visitor training are hidden so the buyer sees a 100% pure app!
+  const [visitorModeUnlocked, setVisitorModeUnlocked] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const mode = new URLSearchParams(window.location.search).get('mode');
+      if (mode === 'client') return false;
+      if (mode === 'visitor') return true;
+    }
+    return true;
+  });
+
+  const [externalRepos, setExternalRepos] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem('decormate_external_repos_v1');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const handleUpdateExternalRepos = (next: Record<string, string>) => {
+    setExternalRepos(next);
+    try {
+      localStorage.setItem('decormate_external_repos_v1', JSON.stringify(next));
+    } catch {}
+  };
 
   // Isolated White-Label Tenant & URL Skin State (?tenant=...&manager=...&city=...&phone=...&ref=...)
   const [tenantConfig, setTenantConfig] = useState<TenantExtendedConfig>(() => {
@@ -790,137 +845,28 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
         </div>
       </header>
 
-      {/* Top Quick-Access Bar for VIP Commercial Playbook, Isolated Tenant Skin, ROI (#deliverables), Visitor Playbook & 25% Sheba Hub */}
-      <div className="bg-[#352012] text-[#FAF7F2] border-b border-[#D4AF37]/50 px-4 sm:px-8 py-2 text-xs">
-        <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <a
-              href="#isolated-tenant-architecture"
-              className="px-2.5 py-1.5 rounded-lg bg-[#D4AF37] text-[#2A1A10] font-extrabold hover:bg-[#F6E27A] transition-colors whitespace-nowrap"
-            >
-              ⚡ ۱. پیش‌نمایش ۱۰ ثانیه‌ای تبلت ویزیتور (URL Skin)
-            </a>
-            <a
-              href="#calculator"
-              className="px-2.5 py-1.5 rounded-lg bg-purple-800 text-white font-bold hover:bg-purple-700 transition-colors whitespace-nowrap"
-            >
-              🟣 ۲. ماشین‌حساب + چک صیادی بنفش + قفل ضدتورم
-            </a>
-            <a
-              href="#deliverables"
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-700 text-white font-bold hover:bg-emerald-600 transition-colors whitespace-nowrap"
-            >
-              🎁 ۳. دستاوردهای خریدار + ماشین‌حساب ROI (#deliverables)
-            </a>
-            <a
-              href="#visitor-playbook"
-              className="px-2.5 py-1.5 rounded-lg bg-white/15 text-[#F6E27A] border border-[#D4AF37]/40 font-bold hover:bg-white/25 transition-colors whitespace-nowrap"
-            >
-              🧭 ۴. راهنمای ویزیتورها (#visitor-playbook)
-            </a>
-            <a
-              href="#golden-formula"
-              className="px-2.5 py-1.5 rounded-lg bg-amber-500/25 text-[#F6E27A] border border-[#D4AF37]/50 font-bold hover:bg-amber-500/35 transition-colors whitespace-nowrap"
-            >
-              🏆 فرمول طلایی فروش (#golden-formula)
-            </a>
-            <a
-              href="#invitation-letter"
-              className="px-2.5 py-1.5 rounded-lg bg-white/15 text-emerald-300 border border-emerald-400/40 font-bold hover:bg-white/25 transition-colors whitespace-nowrap"
-            >
-              📜 ۵. دعوت‌نامه طلاکوب + شبا ۲۵٪ (#invitation-letter)
-            </a>
-          </div>
-          <span className="text-[11px] font-mono-tabular text-[#F6E27A]">
-            کد ایزوله فعال: {tenantConfig.slug} | سفیر: ?ref={tenantConfig.refCode}
-          </span>
-        </div>
-
-        {/* Instant 10-Second Visitor Top Bar for Live In-Store Customization */}
-        <div className="max-w-[1440px] mx-auto mt-2 pt-2 border-t border-[#D4AF37]/30 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 items-center">
-          <input
-            type="text"
-            value={tenantConfig.brandName}
-            onChange={(e) =>
-              handleUpdateTenantConfig({ ...tenantConfig, brandName: e.target.value })
-            }
-            placeholder="نام کسب‌وکار..."
-            aria-label="نام کسب‌وکار در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-bold"
-          />
-          <input
-            type="text"
-            value={tenantConfig.managerName}
-            onChange={(e) =>
-              handleUpdateTenantConfig({ ...tenantConfig, managerName: e.target.value })
-            }
-            placeholder="نام مدیر..."
-            aria-label="نام مدیر در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-bold"
-          />
-          <input
-            type="text"
-            value={tenantConfig.city}
-            onChange={(e) => handleUpdateTenantConfig({ ...tenantConfig, city: e.target.value })}
-            placeholder="شهر / منطقه..."
-            aria-label="شهر در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px]"
-          />
-          <input
-            type="text"
-            dir="ltr"
-            value={tenantConfig.phone}
-            onChange={(e) =>
-              handleUpdateTenantConfig({
-                ...tenantConfig,
-                phone: e.target.value,
-                whatsapp: e.target.value.replace(/\D/g, '').replace(/^0/, '98') || '989120000000',
-              })
-            }
-            placeholder="واتساپ: 0912..."
-            aria-label="شماره واتساپ در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px] font-mono-tabular"
-          />
-          <input
-            type="text"
-            value={tenantConfig.tagline}
-            onChange={(e) =>
-              handleUpdateTenantConfig({ ...tenantConfig, tagline: e.target.value })
-            }
-            placeholder="شعار برند..."
-            aria-label="شعار برند در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-[#D4AF37]/50 text-white text-[11px]"
-          />
-          <select
-            value={tenantConfig.priceMultiplier}
-            onChange={(e) =>
-              handleUpdateTenantConfig({
-                ...tenantConfig,
-                priceMultiplier: Number(e.target.value) || 1.0,
-              })
-            }
-            aria-label="ضریب قیمت در نوار بالای صفحه"
-            className="px-2 py-1.5 rounded-lg bg-[#2A1A10] border border-[#D4AF37]/50 text-[#F6E27A] text-[11px] font-bold font-mono-tabular"
-          >
-            <option value={0.9}>ضریب قیمت: ۰.۹ (-۱۰٪)</option>
-            <option value={0.95}>ضریب قیمت: ۰.۹۵ (-۵٪)</option>
-            <option value={1.0}>ضریب قیمت: ۱.۰ (پایه)</option>
-            <option value={1.08}>ضریب قیمت: ۱.۰۸ (+۸٪)</option>
-            <option value={1.15}>ضریب قیمت: ۱.۱۵ (+۱۵٪)</option>
-          </select>
-          <input
-            type="text"
-            dir="ltr"
-            value={tenantConfig.refCode}
-            onChange={(e) =>
-              handleUpdateTenantConfig({ ...tenantConfig, refCode: e.target.value })
-            }
-            placeholder="کد سفیر: VIP-25"
-            aria-label="کد سفیر ویزیتور در نوار بالای صفحه"
-            className="px-2.5 py-1.5 rounded-lg bg-emerald-900/40 border border-emerald-400/50 text-emerald-200 text-[11px] font-mono-tabular font-bold"
-          />
-        </div>
-      </div>
+      {/* Secret Visitor Multi-Guild Bar (Locks into 100% Clean Buyer View with 1 Click so Buyer Never Sees Other Guilds!) */}
+      <SecretVisitorControlBar
+        activeGuild={activeGuild}
+        onSelectGuild={(g) => {
+          setActiveGuild(g);
+          if (g === 'ceramics_luxury') {
+            setProjectTypeId('porcelain_slab_tile');
+            setMaterialId('porcelain_calacatta_slab');
+            setCategoryFilter('ceramics_slab');
+          } else if (g === 'cabinet_decor') {
+            setProjectTypeId('kitchen_cabinet');
+            setMaterialId('neoclassic_poly');
+            setCategoryFilter('all');
+          }
+        }}
+        visitorModeUnlocked={visitorModeUnlocked}
+        onToggleVisitorMode={() => setVisitorModeUnlocked((v) => !v)}
+        tenantConfig={tenantConfig}
+        onUpdateTenantConfig={handleUpdateTenantConfig}
+        externalRepos={externalRepos}
+        onUpdateExternalRepos={handleUpdateExternalRepos}
+      />
 
       <main id="top" className="flex-1">
         {/* Dedicated 1-Click Accessibility (Disability/Low-Vision/Motor), ADHD Focus & Automated Gradle APK/AAB Bar */}
@@ -1006,8 +952,27 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
           </div>
         </section>
 
-        {/* 3-Second Hook-Driven Hero Banner (Hidden or Simplified in ADHD Calm Mode) */}
-        {!adhdFocusMode && (
+        {/* Dedicated Isolated Portal when another guild (Beauty Salon, Auto, Dental, Gold, Wedding) is selected */}
+        {activeGuild !== 'cabinet_decor' && activeGuild !== 'ceramics_luxury' ? (
+          <DedicatedGuildPortal
+            activeGuild={activeGuild}
+            tenantConfig={tenantConfig}
+            currency={currency}
+            lang={lang}
+            externalRepoUrl={
+              activeGuild === 'auto_barter'
+                ? externalRepos.auto
+                : activeGuild === 'dental_aesthetic'
+                ? externalRepos.dental
+                : activeGuild === 'wedding_venue'
+                ? externalRepos.wedding
+                : undefined
+            }
+          />
+        ) : (
+          <>
+            {/* 3-Second Hook-Driven Hero Banner (Hidden or Simplified in ADHD Calm Mode) */}
+            {!adhdFocusMode && (
           <section
             aria-label="Instant 10-Second Kitchen Cabinet & Wardrobe Price Hook"
             className="px-4 sm:px-8 pt-6 pb-4 max-w-[1440px] mx-auto"
@@ -1646,6 +1611,59 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
                       </button>
                     </div>
 
+                    {/* Anti-Sanction Direct SMS & Gold-Foil PNG Download Buttons */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cleanSms = brandConfig.phone.replace(/\D/g, '') || '09120000000';
+                          const pName = selectedProject.names[lang] || selectedProject.names.fa;
+                          const mName = selectedMaterial.names[lang] || selectedMaterial.names.fa;
+                          const smsBody = `پیش‌فاکتور رسمی ${brandConfig.brandName} (${brandConfig.city})\nپروژه: ${pName} (${lengthMeters} متر - ${mName})\nمبلغ کل: ${formatPrice(totalCashPriceToman, currency, lang)}\nپیش‌پرداخت (${downPaymentPct}%): ${formatPrice(downPayment40Toman, currency, lang)}\nهر چک صیادی (${checkMonths} فقره): ${formatPrice(eachCheckAmountToman, currency, lang)}\nقفل ضدتورم: ${inflationLockCode}`;
+                          window.location.href = `sms:${cleanSms}?body=${encodeURIComponent(smsBody)}`;
+                        }}
+                        className="py-3 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#2A1A10] font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span>📩 ارسال پیش‌فاکتور با پیامک عادی (بدون فیلتر و اینترنت)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const pName = selectedProject.names[lang] || selectedProject.names.fa;
+                          const mName = selectedMaterial.names[lang] || selectedMaterial.names.fa;
+                          const uLabel =
+                            selectedProject.unitLabel[lang] || selectedProject.unitLabel.fa;
+                          downloadGoldFoilInvoicePng({
+                            brandName: brandConfig.brandName,
+                            managerName: tenantConfig.managerName,
+                            city: brandConfig.city,
+                            phone: brandConfig.phone,
+                            guildBadge: 'پیش‌فاکتور رسمی اتحادیه کابینت، دکوراسیون و سرامیک اسلب',
+                            clientName: clientNameInput || 'مشتری گرامی VIP',
+                            itemTitle: `${pName} (${lengthMeters} ${uLabel})`,
+                            itemSubtitle: mName,
+                            totalAmountFormatted: formatPrice(totalCashPriceToman, currency, lang),
+                            cashDownFormatted: formatPrice(downPayment40Toman, currency, lang),
+                            checkInstallmentFormatted: formatPrice(eachCheckAmountToman, currency, lang),
+                            checkCount: checkMonths,
+                            sayadiStatusText:
+                              sayadiStatus === 'white'
+                                ? 'وضعیت سفید بانک مرکزی (تایید خوش‌حسابی A+)'
+                                : sayadiStatus === 'yellow'
+                                ? 'وضعیت زرد (نیاز به ضامن)'
+                                : 'وضعیت قرمز',
+                            inflationLockCode,
+                            extraTechnicalLine1: `برآورد مهندسی: ${estimatedMdfSheets} ورق کامل / اسلب | ${estimatedBlumHinges} عدد یراق/همتراز`,
+                            extraTechnicalLine2: `سهم طرف اول (${partnerASharePct}%): ${formatPrice(partnerATotalToman, currency, lang)} | طرف دوم (${partnerBSharePct}%): ${formatPrice(partnerBTotalToman, currency, lang)}`,
+                          });
+                        }}
+                        className="py-3 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#F6E27A] text-[#2A1A10] font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span>🖼️ دانلود عکس فاکتور طلاکوب (مناسب گالری، ایتا، بله و تلگرام)</span>
+                      </button>
+                    </div>
+
                     {/* Offline Client Pre-Invoice CRM Box */}
                     <div className="p-3.5 rounded-xl bg-white border border-[#E6DEC8] space-y-2.5">
                       <div className="text-xs font-bold text-[#4A2E1B]">
@@ -1757,7 +1775,8 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
           {/* Interactive Category Filter Bar */}
           <div className="flex flex-wrap items-center gap-2 mb-8 p-1.5 bg-white border border-[#E6DEC8] rounded-2xl w-fit">
             {[
-              { id: 'all', label: 'همه ۱۰ نمونه کار لوکس' },
+              { id: 'all', label: 'همه ۱۲ نمونه کار لوکس (کابینت + اسلب)' },
+              { id: 'ceramics_slab', label: '🏛️ کاشی، سرامیک اسلب و شیرآلات توکار' },
               { id: 'neoclassic', label: 'نئوکلاسیک و چوب گردو' },
               { id: 'modern', label: 'پلی‌اورتان انزو، هایگلاس و ممبران' },
               { id: 'closet', label: 'کلوزت‌روم و کمد ریلی' },
@@ -2004,23 +2023,41 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
             )}
           </div>
         </section>
+          </>
+        )}
 
-        {/* Section 5: Comprehensive VIP Commercial Enterprise Suite (Isolated White-Label URL Skin, 360 Studio, Flash Workshop Tender, #deliverables ROI, #visitor-playbook, #golden-formula, #invitation-letter & 25% Sheba Ledger) */}
-        <VipCommercialEnterpriseSuite
-          tenantConfig={tenantConfig}
-          onUpdateTenantConfig={handleUpdateTenantConfig}
-          currency={currency}
-          lang={lang}
-        />
+        {/* Section 5 & 6: Visitor Training, 25% Sheba Affiliate & Multi-Tenant Architecture
+            (AUTOMATICALLY HIDDEN WHEN VISITOR MODE IS LOCKED SO THE BUYER SEES A 100% PURE, UNCLUTTERED APP!) */}
+        {visitorModeUnlocked ? (
+          <>
+            <TavanaAmbassadorAcademySimulator currency={currency} lang={lang} />
 
-        {/* Section 6: Live White-Label Personalization, 25% Guaranteed Visitor Income & Creative Critique */}
-        <WhiteLabelAffiliateSection
-          brandConfig={brandConfig}
-          onUpdateBrandConfig={handleUpdateBrandConfig}
-          onResetBrandConfig={handleResetBrandConfig}
-          currency={currency}
-          lang={lang}
-        />
+            <VipCommercialEnterpriseSuite
+              tenantConfig={tenantConfig}
+              onUpdateTenantConfig={handleUpdateTenantConfig}
+              currency={currency}
+              lang={lang}
+            />
+
+            <WhiteLabelAffiliateSection
+              brandConfig={brandConfig}
+              onUpdateBrandConfig={handleUpdateBrandConfig}
+              onResetBrandConfig={handleResetBrandConfig}
+              currency={currency}
+              lang={lang}
+            />
+          </>
+        ) : (
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setVisitorModeUnlocked(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#FAF7F2] hover:bg-[#4A2E1B] text-[#6F4E37] hover:text-[#F6E27A] border border-[#E6DEC8] text-[11px] font-bold cursor-pointer transition-colors"
+            >
+              🔓 کلید مخفی سفیر فروش: باز کردن پنل تغییر صنف (۷ صنف)، آموزش ویزیتور و پورسانت ۲۵٪ شبا
+            </button>
+          </div>
+        )}
       </main>
 
       {/* Clean Luxury Footer */}
