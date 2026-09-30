@@ -29,6 +29,7 @@ import { TenantExtendedConfig } from './VipCommercialEnterpriseSuite';
 export type ActiveGuildId =
   | 'cabinet_decor'
   | 'ceramics_luxury'
+  | 'furniture_bridal'
   | 'beauty_salon'
   | 'auto_barter'
   | 'dental_aesthetic'
@@ -63,6 +64,15 @@ export const GUILDS_META: Record<ActiveGuildId, GuildMeta> = {
     defaultTagline: 'مرجع تخصصی اسلب پرسلانی ۱۲۰×۲۴۰، سنگ مرمر بوک‌مچ، شیرآلات توکار طلایی و وال‌هنگ سوئیسی',
     unionTitle: 'فرمول استاندارد متراژ کف و بدنه + ضریب پرتی برش اسلب + چسب پرسلانی و همتراز',
     accentColor: '#1E3A3A',
+  },
+  furniture_bridal: {
+    id: 'furniture_bridal',
+    shortTitle: '🪑 گالری مبل، سرویس خواب و جهیزیه عروس (مبلیار)',
+    badgeTitle: 'پکیج‌ساز هوشمند جهیزیه عروس، محاسبه متراژ پارچه و کلاف راش + سایت دائمی گالری مبل',
+    defaultBrandName: 'گالری مبلمان، سرویس خواب و جهیزیه عروس رویال چوب VIP',
+    defaultTagline: 'تولید و عرضه مستقیم مبلمان نئوکلاسیک، چستر، میز ناهارخوری و سرویس خواب عروس با کلاف چوب راش گرجستان و ۵ سال ضمانت فوم سرد',
+    unionTitle: 'پکیج‌ساز رسمی جهیزیه عروس + محاسبه مابه‌التفاوت متراژ پارچه ترک/نانو + تقسیط چک صیادی بنفش',
+    accentColor: '#3E2723',
   },
   beauty_salon: {
     id: 'beauty_salon',
@@ -681,6 +691,19 @@ export const DedicatedGuildPortal: React.FC<DedicatedGuildViewProps> = ({
     },
   ]);
 
+  // 6. Furniture, Bedding & Bridal Dowry Gallery State (FURNIMATE / مبلیار)
+  const [sofaSetTitle, setSofaSetTitle] = useState(
+    'مبلمان ۸ نفره نئوکلاسیک فرانسوی / چستر ایتالیایی'
+  );
+  const [sofaBasePriceToman, setSofaBasePriceToman] = useState(88000000);
+  const [woodFrameType, setWoodFrameType] = useState('کلاف تمام چوب راش گرجستان + رنگ پلی‌اورتان ورق طلا');
+  const [fabricMeters, setFabricMeters] = useState(32); // 32 meters of fabric for 8-seater + dining
+  const [fabricDiffPerMeterToman, setFabricDiffPerMeterToman] = useState(380000); // Imported Turkish/Nano fabric upgrade per meter
+  const [includeDiningTable8, setIncludeDiningTable8] = useState(true);
+  const [includeBridalBedroomSet, setIncludeBridalBedroomSet] = useState(true);
+  const [includeConsoleAndTvStand, setIncludeConsoleAndTvStand] = useState(true);
+  const [bridalDowryDiscountPct, setBridalDowryDiscountPct] = useState(12);
+
   // Compute Guild-Specific Totals & Technical Details
   let itemTitle = '';
   let itemSubtitle = '';
@@ -752,6 +775,22 @@ export const DedicatedGuildPortal: React.FC<DedicatedGuildViewProps> = ({
     itemSubtitle = `متخصص لاین: ${stylistName} | کسر خودکار هزینه مواد مصرفی قبل از تقسیم درصد`;
     extraLine1 = `هزینه مواد مصرفی کسرشده: ${formatPrice(salonMaterialCostToman, currency, lang)} | خالص قابل تقسیم: ${formatPrice(netAfterMaterial, currency, lang)}`;
     extraLine2 = `سهم خالص پرسنل (${stylistSharePct}٪): ${formatPrice(stylistCut, currency, lang)} | سود خالص مدیریت سالن (${100 - stylistSharePct}٪): ${formatPrice(salonOwnerCut, currency, lang)}`;
+  } else if (activeGuild === 'furniture_bridal') {
+    const diningCost = includeDiningTable8 ? 42000000 : 0;
+    const bedroomCost = includeBridalBedroomSet ? 48000000 : 0;
+    const consoleCost = includeConsoleAndTvStand ? 24000000 : 0;
+    const fabricUpgradeTotal = fabricMeters * fabricDiffPerMeterToman;
+    const rawPackageTotal =
+      sofaBasePriceToman + diningCost + bedroomCost + consoleCost + fabricUpgradeTotal;
+    totalCashToman = Math.round(
+      rawPackageTotal *
+        (1 - bridalDowryDiscountPct / 100) *
+        (tenantConfig.priceMultiplier || 1)
+    );
+    itemTitle = `پکیج جهیزیه و مبلمان: ${sofaSetTitle} (${woodFrameType})`;
+    itemSubtitle = `شامل گواهی کتبی ۵ سال ضمانت فوم سرد یورتان و کلاف چوب راش + ${bridalDowryDiscountPct}٪ هدیه جهیزیه عروس`;
+    extraLine1 = `متراژ پارچه مصرفی: ${fabricMeters} متر (مابه‌التفاوت پارچه نانو/ترک: ${formatPrice(fabricUpgradeTotal, currency, lang)})`;
+    extraLine2 = `اقلام همراه: ${includeDiningTable8 ? '✓ ناهارخوری ست ' : ''}${includeBridalBedroomSet ? '✓ سرویس خواب کامل عروس ' : ''}${includeConsoleAndTvStand ? '✓ آینه کنسول و میز TV' : ''}`;
   } else {
     // wedding_venue
     const menuTotal = guestCount * menuPerGuestToman;
@@ -893,6 +932,8 @@ export const DedicatedGuildPortal: React.FC<DedicatedGuildViewProps> = ({
                 '👑 منوساز زنده سر میز عروس و داماد + تسهیم هزینه دو خانواده و چک صیادی'}
               {activeGuild === 'beauty_salon' &&
                 '💄 سایت‌ساز اختصاصی سالن زیبایی زنانه + تخفیف روزهای خاص + حسابداری لاین‌ها'}
+              {activeGuild === 'furniture_bridal' &&
+                '🪑 پکیج‌ساز هوشمند مبلمان، سرویس خواب و جهیزیه عروس (مبلیار) + محاسبه متراژ پارچه و چک صیادی'}
             </h2>
           </div>
 
@@ -1299,6 +1340,150 @@ export const DedicatedGuildPortal: React.FC<DedicatedGuildViewProps> = ({
             </div>
           )}
 
+          {/* F) FURNITURE, BEDDING & BRIDAL DOWRY PACKAGE BUILDER (FURNIMATE / مبلیار) */}
+          {activeGuild === 'furniture_bridal' && (
+            <div className="space-y-4 p-4 rounded-2xl bg-[#FAF7F2] border border-[#E6DEC8]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block font-bold text-[#4A2E1B] mb-1">
+                    مدل ست مبلمان انتخابی (۷ / ۸ / ۹ نفره):
+                  </label>
+                  <input
+                    type="text"
+                    value={sofaSetTitle}
+                    onChange={(e) => setSofaSetTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#E6DEC8] font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#4A2E1B] mb-1">
+                    جنس کلاف چوب و نوع رنگ (راش گرجستان / گردو / پلی‌اورتان):
+                  </label>
+                  <input
+                    type="text"
+                    value={woodFrameType}
+                    onChange={(e) => setWoodFrameType(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#E6DEC8]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-[#4A2E1B] mb-1">
+                  <span>قیمت پایه ست مبلمان (با پارچه استاندارد ایرانی/چینی):</span>
+                  <span className="font-mono-tabular text-emerald-700">
+                    {formatPrice(sofaBasePriceToman, currency, lang)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={35000000}
+                  max={280000000}
+                  step={2000000}
+                  value={sofaBasePriceToman}
+                  onChange={(e) => setSofaBasePriceToman(Number(e.target.value))}
+                  className="w-full accent-[#4A2E1B] cursor-pointer"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <div className="flex justify-between font-bold text-[#4A2E1B] mb-1">
+                    <span>🧵 متراژ کل پارچه:</span>
+                    <span className="font-mono-tabular text-purple-800">{fabricMeters} متر</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={18}
+                    max={55}
+                    step={1}
+                    value={fabricMeters}
+                    onChange={(e) => setFabricMeters(Number(e.target.value))}
+                    className="w-full accent-purple-700 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between font-bold text-[#4A2E1B] mb-1">
+                    <span>مابه‌التفاوت هر متر پارچه ترک/نانو:</span>
+                    <span className="font-mono-tabular text-amber-800">
+                      {formatPrice(fabricDiffPerMeterToman, currency, lang)}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1500000}
+                    step={50000}
+                    value={fabricDiffPerMeterToman}
+                    onChange={(e) => setFabricDiffPerMeterToman(Number(e.target.value))}
+                    className="w-full accent-amber-600 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between font-bold text-[#4A2E1B] mb-1">
+                    <span>🎁 تخفیف پکیج جهیزیه عروس:</span>
+                    <span className="font-mono-tabular text-emerald-700">
+                      {bridalDowryDiscountPct}٪
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={25}
+                    step={2}
+                    value={bridalDowryDiscountPct}
+                    onChange={(e) => setBridalDowryDiscountPct(Number(e.target.value))}
+                    className="w-full accent-emerald-600 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setIncludeDiningTable8(!includeDiningTable8)}
+                  className={`p-2.5 rounded-xl font-bold border cursor-pointer ${
+                    includeDiningTable8
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950'
+                      : 'bg-white border-[#E6DEC8] text-[#6F4E37]'
+                  }`}
+                >
+                  {includeDiningTable8
+                    ? '✓ میز ناهارخوری ۶/۸ نفره ست (+۴۲ م)'
+                    : '+ افزودن میز ناهارخوری ست'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIncludeBridalBedroomSet(!includeBridalBedroomSet)}
+                  className={`p-2.5 rounded-xl font-bold border cursor-pointer ${
+                    includeBridalBedroomSet
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950'
+                      : 'bg-white border-[#E6DEC8] text-[#6F4E37]'
+                  }`}
+                >
+                  {includeBridalBedroomSet
+                    ? '✓ سرویس خواب عروس و تشک رویال (+۴۸ م)'
+                    : '+ افزودن سرویس خواب عروس'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIncludeConsoleAndTvStand(!includeConsoleAndTvStand)}
+                  className={`p-2.5 rounded-xl font-bold border cursor-pointer ${
+                    includeConsoleAndTvStand
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-950'
+                      : 'bg-white border-[#E6DEC8] text-[#6F4E37]'
+                  }`}
+                >
+                  {includeConsoleAndTvStand
+                    ? '✓ آینه کنسول، جاکفشی و میز TV (+۲۴ م)'
+                    : '+ افزودن آینه کنسول و میز TV'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Shared Sayadi Check & Down Payment Controls */}
           <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-300 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1610,6 +1795,89 @@ export const DedicatedGuildPortal: React.FC<DedicatedGuildViewProps> = ({
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEDICATED FURNITURE & BRIDAL DOWRY WEBSITE SHOWCASE (FURNIMATE / مبلیار) */}
+      {activeGuild === 'furniture_bridal' && (
+        <div className="hc-card bg-white border-2 border-[#D4AF37] rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#E6DEC8] pb-4">
+            <div>
+              <span className="px-3 py-1 rounded-xl bg-[#3E2723] text-[#F6E27A] text-xs font-extrabold">
+                🪑 کاتالوگ آنلاین و سایت‌ساز دائمی گالری مبلمان و جهیزیه عروس (مبلیار — FurniMate)
+              </span>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#4A2E1B] mt-2">
+                ویترین اختصاصی «{tenantConfig.brandName}» — مبلمان نئوکلاسیک، سرویس خواب عروس، ناهارخوری و کالیته پارچه ترک
+              </h3>
+            </div>
+            <div className="px-4 py-3 rounded-2xl bg-emerald-50 border-2 border-emerald-500 text-emerald-950 text-xs font-extrabold">
+              🛡️ ضمانت‌نامه کتبی ۵ ساله کلاف چوب راش گرجستان و فوم سرد یورتان ویژه زوج‌های جوان ({bridalDowryDiscountPct}٪ هدیه جهیزیه)
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              {
+                badge: '🛋️ ست مبلمان نئوکلاسیک و چستر',
+                title: 'مبل ۸ نفره نئوکلاسیک فرانسوی و چستر ایتالیایی',
+                desc: 'کلاف ۱۰۰٪ چوب راش گرجستان خشک‌کن‌رفته، فوم سرد ۱۳ سانتی شرکتی و دوخت صنعتی درجه یک.',
+                priceTag: '۵ سال ضمانت بی‌قیدوشرط کلاف و فوم',
+                img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=80',
+              },
+              {
+                badge: '🍽️ میز ناهارخوری و آینه کنسول ست',
+                title: 'ست غذاخوری ۶ و ۸ نفره صفحه چوب طبیعی و سنگ اسلب',
+                desc: 'رنگ پلی‌اورتان ضدخش، صندلی‌های ارگونومیک لمسه‌دوزی‌شده همراه با آینه کنسول و میز تلویزیون ست.',
+                priceTag: 'تولید در رنگ چوب و پارچه دلخواه مشتری',
+                img: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=900&q=80',
+              },
+              {
+                badge: '🛏️ سرویس خواب کامل عروس و تشک رویال',
+                title: 'تخت دو نفره کاپیتوناژ، میز آرایش، پاتختی و تشک طبی فنرپاکتی',
+                desc: 'طراحی مجلل ویژه جهیزیه عروس با جک باکس‌دار، نورپردازی مخفی و تشک طبی-فنری ۱۰ سال ضمانت.',
+                priceTag: `تخفیف ویژه جهیزیه عروس: ${bridalDowryDiscountPct}٪`,
+                img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+              },
+              {
+                badge: '🧵 کالیته پارچه‌های نانو و شانل ترک',
+                title: 'بیش از ۱۲۰ رنگ پارچه ضدلک نانو، بوکله، مازراتی و شانل یزد و ترک',
+                desc: 'محاسبه شفاف متراژ پارچه مصرفی در پیش‌فاکتور طلاکوب بدون یک ریال هزینه پنهان در زمان تحویل.',
+                priceTag: 'قفل قیمت چوب و پارچه از لحظه بیعانه',
+                img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=900&q=80',
+              },
+            ].map((card, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-[#E6DEC8] bg-[#FAF7F2] overflow-hidden flex flex-col justify-between shadow-xs"
+              >
+                <div>
+                  <div className="h-44 w-full bg-[#3E2723] relative overflow-hidden">
+                    <img
+                      src={card.img}
+                      alt={card.title}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-[#3E2723]/90 text-[#F6E27A] text-[10px] font-extrabold border border-[#D4AF37]">
+                      {card.badge}
+                    </span>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h4 className="text-xs sm:text-sm font-extrabold text-[#4A2E1B]">
+                      {card.title}
+                    </h4>
+                    <p className="text-[11px] text-[#6F4E37] leading-relaxed">{card.desc}</p>
+                  </div>
+                </div>
+                <div className="px-4 pb-4">
+                  <div className="p-2 rounded-xl bg-white border border-[#D4AF37] text-center text-[11px] font-extrabold text-[#3E2723]">
+                    {card.priceTag}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

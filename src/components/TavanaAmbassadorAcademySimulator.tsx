@@ -19,6 +19,7 @@ export type AmbassadorTier = 'A++' | 'A+' | 'A' | 'B' | 'C';
 export type ProductId =
   | 'DECORMATE'
   | 'SLABMATE'
+  | 'FURNIMATE'
   | 'SALONMATE'
   | 'AUTOBARTER'
   | 'TANARA'
@@ -46,7 +47,7 @@ const ACADEMY_PRODUCTS: Record<ProductId, ProductSpecInfo> = {
     targetGuildFa: 'نمایشگاه‌های کابینت، کارگاه‌های MDF و کلوزت‌روم',
     pitchHookFa:
       'فرمول ۶۰٪ زمینی + ۴۰٪ هوایی اتحادیه، محاسبه دقیق تعداد ورق MDF و یراق بلوم + قفل ضدتورم',
-    crossSellTargets: ['SLABMATE', 'AUTOBARTER'],
+    crossSellTargets: ['SLABMATE', 'FURNIMATE', 'AUTOBARTER'],
   },
   SLABMATE: {
     id: 'SLABMATE',
@@ -54,7 +55,15 @@ const ACADEMY_PRODUCTS: Record<ProductId, ProductSpecInfo> = {
     targetGuildFa: 'شوروم‌های کاشی و سرامیک اسلب، سنگ بوک‌مچ و شیرآلات توکار',
     pitchHookFa:
       'محاسبه متراژ کف و بدنه + ضریب پرتی برش اسلب (۸٪ تا ۱۲٪) + تعداد کیسه چسب پرسلانی و کلیپس همتراز',
-    crossSellTargets: ['DECORMATE', 'AUTOBARTER'],
+    crossSellTargets: ['DECORMATE', 'FURNIMATE', 'AUTOBARTER'],
+  },
+  FURNIMATE: {
+    id: 'FURNIMATE',
+    nameFa: '🪑 FurniMate / مبلیار (مبلمان، سرویس خواب و جهیزیه عروس)',
+    targetGuildFa: 'گالری‌های مبلمان، سرویس خواب، ناهارخوری و پکیج جهیزیه عروس',
+    pitchHookFa:
+      'پکیج‌ساز هوشمند جهیزیه عروس + محاسبه مابه‌التفاوت متراژ پارچه ترک/نانو + گواهی ۵ سال ضمانت کلاف راش و فوم سرد + سایت دائمی گالری',
+    crossSellTargets: ['DECORMATE', 'EVENTMATE', 'SALONMATE', 'TALAYAR'],
   },
   SALONMATE: {
     id: 'SALONMATE',
@@ -132,10 +141,39 @@ export const TavanaAmbassadorAcademySimulator: React.FC<Props> = ({ currency, la
   >([
     {
       code: 'TVN-XREF-994821',
-      client: 'عمارت عروسی قصر طلایی -> معرفی به سالن زیبایی و طلافروشی',
+      client: 'عمارت عروسی قصر طلایی -> معرفی به سالن زیبایی، مبل جهیزیه و طلافروشی',
       source: 'EVENTMATE',
-      targets: ['SALONMATE', 'TALAYAR'],
+      targets: ['SALONMATE', 'FURNIMATE', 'TALAYAR'],
       expiresFa: '۳۰ روز کامل (قفل سرنخ فعال)',
+    },
+  ]);
+
+  // 5. Guild-Master Partner & "Rejection-Pivot" Referral Code Generator State
+  const [partnerOwnerName, setPartnerOwnerName] = useState('حاج‌آقا احتشامی (رئیس باغ‌تالار قصر طلایی)');
+  const [partnerVenueAddress, setPartnerVenueAddress] = useState('تهران، گرمدره، بلوار امیرکبیر، عمارت قصر طلایی');
+  const [partnerPhone, setPartnerPhone] = useState('09121112233');
+  const [partnerSheba, setPartnerSheba] = useState('IR550120000000009876543210');
+  const [partnerStatusType, setPartnerStatusType] = useState<'REJECTION_PIVOT' | 'VIP_BUYER'>('REJECTION_PIVOT');
+  const [partnerRewardPct, setPartnerRewardPct] = useState(15); // 15% to Guild Partner, 20% to Ambassador!
+  const [registeredGuildPartners, setRegisteredGuildPartners] = useState<
+    Array<{
+      partnerCode: string;
+      ownerName: string;
+      address: string;
+      phone: string;
+      statusType: 'REJECTION_PIVOT' | 'VIP_BUYER';
+      partnerPct: number;
+      ambassadorPct: number;
+    }>
+  >([
+    {
+      partnerCode: 'TVN-PARTNER-7741',
+      ownerName: 'حاج‌آقا احتشامی (عمارت عروسی قصر طلایی)',
+      address: 'تهران، گرمدره، بلوار امیرکبیر',
+      phone: '09121112233',
+      statusType: 'REJECTION_PIVOT',
+      partnerPct: 15,
+      ambassadorPct: 20,
     },
   ]);
 
@@ -623,6 +661,201 @@ export const TavanaAmbassadorAcademySimulator: React.FC<Props> = ({ currency, la
                     <span className="px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-200 font-bold shrink-0">
                       {ref.expiresFa}
                     </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. NEW: GUILD-MASTER PARTNER & "REJECTION-PIVOT" REFERRAL CODE ENGINE */}
+        <div className="rounded-3xl bg-gradient-to-l from-emerald-950/90 via-[#1E2918] to-[#141D10] border-2 border-[#D4AF37] p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#D4AF37]/30 pb-4">
+            <div className="space-y-1.5">
+              <span className="inline-block px-3 py-1 rounded-xl bg-[#D4AF37] text-[#1E1108] text-xs font-extrabold">
+                🤝 ۵. تکنیک طلایی «تبدیل نهِ خریدار به شریک معرف» (Guild-Master Referral & Rejection-Pivot Engine)
+              </span>
+              <h3 className="text-lg sm:text-2xl font-extrabold text-white">
+                صدور آنی «کد معرف درآمدزا» برای تالارداران و رؤسای اصناف (حتی اگر خودشان فعلاً خرید نکنند!)
+              </h3>
+              <p className="text-xs text-emerald-200/90 leading-relaxed max-w-4xl">
+                اگر ویزیتور وارد باغ‌تالار یا واحدی شد و مدیر گفت «فعلاً خودم نیاز ندارم»، ویزیتور بلافاصله پیشنهاد دوم را روی میز می‌گذارد: بدون یک ریال هزینه، نام و آدرس او را ثبت کرده و به او <strong>کد معرف رسمی (`TVN-PARTNER`)</strong> می‌دهد تا در ازای معرفی هر تالار دیگر، سالن زیبایی، گالری مبل یا طلافروشی، <strong>{partnerRewardPct}٪ از مبلغ قرارداد نقداً به شبای او</strong> و <strong>{35 - partnerRewardPct}٪ به شبای ویزیتور</strong> واریز شود!
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-black/50 border border-[#D4AF37] text-xs text-center shrink-0 space-y-1">
+              <div className="text-[#F6E27A] font-extrabold">سهم معرف صنفی از هر قرارداد ۲۹ میلیونی:</div>
+              <div className="text-lg font-mono-tabular font-extrabold text-emerald-400">
+                {formatPrice(Math.round(dealBaseAmountToman * (partnerRewardPct / 100)), currency, lang)}
+              </div>
+              <div className="text-[10px] text-white/75">
+                + سهم ویزیتور ثبت‌کننده ({35 - partnerRewardPct}٪):{' '}
+                {formatPrice(Math.round(dealBaseAmountToman * ((35 - partnerRewardPct) / 100)), currency, lang)}
+              </div>
+            </div>
+          </div>
+
+          {/* Golden Script for Rejection Pivot */}
+          <div className="p-4 rounded-2xl bg-black/40 border border-emerald-400/50 space-y-1.5 text-xs">
+            <div className="font-extrabold text-[#F6E27A]">
+              💬 دیالوگ آماده ویزیتور در لحظه شنیدن «فعلاً خودم نیاز ندارم» (پیشنهاد روی میز):
+            </div>
+            <p className="text-white/95 font-bold leading-relaxed">
+              «جناب حاج‌آقا / مدیریت محترم، کاملاً به تصمیم شما احترام می‌گذارم که فعلاً خودتان نیاز ندارید؛ اما چون شما در صنف خودتان اعتبار بالایی دارید و تالارداران، سالن‌های زیبایی، گالری‌های مبل و طلافروشان زیادی شما را می‌شناسند، یک پیشنهاد درآمدزایی بدون یک ریال هزینه برایتان روی میز است: همین الان نام و آدرس مجموعه شما را در سیستم ثبت می‌کنم و یک کد معرف اختصاصی برایتان فعال می‌کنم. هر همکار یا شغل دیگری که با کد شما قرارداد ببندد، {partnerRewardPct}٪ نقد (حدود ۴.۳ میلیون تومان در هر معرفی) مستقیماً به شبای شما واریز می‌شود!»
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-xs">
+            {/* Form to Issue Partner Code on the Spot */}
+            <div className="lg:col-span-7 space-y-3 bg-white/5 p-5 rounded-2xl border border-white/15">
+              <div className="font-extrabold text-[#F6E27A] text-sm">
+                📝 فرم ثبت مشخصات رئیس صنف / تالاردار توسط ویزیتور و صدور کد معرف:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/80 mb-1 font-bold">نام مدیر و نام واحد صنفی / تالار:</label>
+                  <input
+                    type="text"
+                    value={partnerOwnerName}
+                    onChange={(e) => setPartnerOwnerName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-[#D4AF37]/50 text-white font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 mb-1 font-bold">تلفن همراه (جهت پیامک کد معرف):</label>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    value={partnerPhone}
+                    onChange={(e) => setPartnerPhone(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-[#D4AF37]/50 text-[#F6E27A] font-mono-tabular font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/80 mb-1 font-bold">آدرس دقیق محل کسب‌وکار / باغ‌تالار:</label>
+                  <input
+                    type="text"
+                    value={partnerVenueAddress}
+                    onChange={(e) => setPartnerVenueAddress(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 mb-1 font-bold">شماره شبا معرف صنفی (جهت واریز پورسانت):</label>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    value={partnerSheba}
+                    onChange={(e) => setPartnerSheba(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-emerald-300 font-mono-tabular"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPartnerStatusType(
+                      partnerStatusType === 'REJECTION_PIVOT' ? 'VIP_BUYER' : 'REJECTION_PIVOT'
+                    )
+                  }
+                  className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-400 text-[#F6E27A] font-bold cursor-pointer"
+                >
+                  وضعیت فعلی:{' '}
+                  {partnerStatusType === 'REJECTION_PIVOT'
+                    ? '🔄 نخریده ولی تبدیل به شریک معرف شد'
+                    : '👑 هم خریدار لایسنس و هم شریک معرف VIP'}
+                </button>
+
+                <div>
+                  <div className="flex justify-between font-bold text-white/90 mb-1">
+                    <span>درصد پورسانت تخصیصی به معرف صنفی:</span>
+                    <span className="font-mono-tabular text-emerald-300">
+                      {partnerRewardPct}% (سهم سفیر: {35 - partnerRewardPct}%)
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={10}
+                    max={20}
+                    step={5}
+                    value={partnerRewardPct}
+                    onChange={(e) => setPartnerRewardPct(Number(e.target.value))}
+                    className="w-full accent-emerald-400 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!partnerOwnerName.trim()) return;
+                    const newCode = `TVN-PARTNER-${Math.floor(1000 + Math.random() * 9000)}`;
+                    setRegisteredGuildPartners([
+                      {
+                        partnerCode: newCode,
+                        ownerName: partnerOwnerName,
+                        address: partnerVenueAddress,
+                        phone: partnerPhone,
+                        statusType: partnerStatusType,
+                        partnerPct: partnerRewardPct,
+                        ambassadorPct: 35 - partnerRewardPct,
+                      },
+                      ...registeredGuildPartners,
+                    ]);
+                  }}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#c59f2d] text-[#1E1108] font-extrabold cursor-pointer"
+                >
+                  + صدور فوری کد معرف صنفی در سیستم
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const activeCode = registeredGuildPartners[0]?.partnerCode || 'TVN-PARTNER-7741';
+                    const msg = `👑 *کارت رسمی شریک تجاری و معرف ارشد توانا سیتی*\n👤 *نام:* ${partnerOwnerName}\n📍 *آدرس:* ${partnerVenueAddress}\n🔑 *کد معرف اختصاصی شما:* ${activeCode}\n💰 *پورسانت هر معرفی موفق به تالارها و اصناف:* ${partnerRewardPct}٪ نقد به شبای شما (${formatPrice(Math.round(dealBaseAmountToman * (partnerRewardPct / 100)), currency, lang)})\n👤 *سفیر پشتیبان شما:* ${candidateName}`;
+                    const cleanPhone = partnerPhone.replace(/\D/g, '') || '09121112233';
+                    window.location.href = `sms:${cleanPhone}?body=${encodeURIComponent(msg)}`;
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold cursor-pointer"
+                >
+                  📩 ارسال پیامک کد معرف به گوشی رئیس صنف
+                </button>
+              </div>
+            </div>
+
+            {/* List of Issued Guild Partner Codes */}
+            <div className="lg:col-span-5 space-y-2.5">
+              <div className="font-extrabold text-[#F6E27A]">
+                📋 لیست رؤسای اصناف و تالارداران دارای کد معرف فعال:
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {registeredGuildPartners.map((gp) => (
+                  <div
+                    key={gp.partnerCode}
+                    className="p-3.5 rounded-2xl bg-black/50 border border-[#D4AF37]/60 space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono-tabular font-extrabold text-emerald-400 text-sm">
+                        {gp.partnerCode}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-amber-500/20 text-[#F6E27A] text-[10px] font-bold">
+                        {gp.statusType === 'REJECTION_PIVOT'
+                          ? 'تبدیل از عدم خرید به شریک معرف'
+                          : 'خریدار + شریک VIP'}
+                      </span>
+                    </div>
+                    <div className="font-bold text-white">{gp.ownerName}</div>
+                    <div className="text-[11px] text-white/75">
+                      📍 {gp.address} | 📞 {gp.phone}
+                    </div>
+                    <div className="text-[11px] text-emerald-300 font-bold pt-1 border-t border-white/10">
+                      سهم معرف: {gp.partnerPct}% نقد شبا | سهم ویزیتور ({candidateName}): {gp.ambassadorPct}%
+                    </div>
                   </div>
                 ))}
               </div>

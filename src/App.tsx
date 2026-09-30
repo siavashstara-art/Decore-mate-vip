@@ -100,15 +100,30 @@ export default function App() {
   // ADHD Step-by-Step Wizard Tracker
   const [adhdStep, setAdhdStep] = useState<1 | 2 | 3>(1);
 
-  // Multi-Guild Chameleon & Secret Visitor Lock State
+  // Multi-Guild Chameleon & Secret Visitor Lock State (Supports both internal IDs & ForoshYar ProductIds)
   const [activeGuild, setActiveGuild] = useState<ActiveGuildId>(() => {
     if (typeof window !== 'undefined') {
-      const g = new URLSearchParams(window.location.search).get('guild') as ActiveGuildId;
+      const rawGuild = new URLSearchParams(window.location.search).get('guild');
+      const productIdMap: Record<string, ActiveGuildId> = {
+        DECORMATE: 'cabinet_decor',
+        SLABMATE: 'ceramics_luxury',
+        FURNIMATE: 'furniture_bridal',
+        SALONMATE: 'beauty_salon',
+        AUTOBARTER: 'auto_barter',
+        TANARA: 'dental_aesthetic',
+        TALAYAR: 'gold_jewelry',
+        EVENTMATE: 'wedding_venue',
+      };
+      if (rawGuild && productIdMap[rawGuild.toUpperCase()]) {
+        return productIdMap[rawGuild.toUpperCase()];
+      }
+      const g = rawGuild as ActiveGuildId;
       if (
         g &&
         [
           'cabinet_decor',
           'ceramics_luxury',
+          'furniture_bridal',
           'beauty_salon',
           'auto_barter',
           'dental_aesthetic',
@@ -617,6 +632,20 @@ ${scheduleLines}${checkMonths > 6 ? `\n   • ... و ${checkMonths - 6} فقره
                   {l.flag} {l.code.toUpperCase()}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold transition-colors cursor-pointer whitespace-nowrap border ${
+                  lang === 'en'
+                    ? 'bg-[#D4AF37] text-[#2A1A10] border-white'
+                    : 'bg-white/10 text-[#F6E27A] border-[#D4AF37]/40 hover:bg-white/20'
+                }`}
+              >
+                🇬🇧 English (International)
+              </button>
+              <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-200 border border-emerald-500/40 text-[10px] font-bold">
+                🌐 هماهنگ با ۱۰ زبان و گویش فروشیار (فارسی، گیلکی، بلوچی، کوردی، آذری، لری، عربی، ترکی، روسی، EN)
+              </span>
             </div>
 
             {/* Currency Switcher: IRT | USD | IQD | AED | TRY | RUB */}
